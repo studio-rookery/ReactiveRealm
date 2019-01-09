@@ -27,6 +27,7 @@
 		C92833AF21E5FFC200BE56AC /* ObjectObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */; };
 		C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B021E6007300BE56AC /* RealmObjectError.swift */; };
 		C92833B321E6024E00BE56AC /* TestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B221E6024E00BE56AC /* TestModel.swift */; };
+		C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B621E602B400BE56AC /* ObjectObservableTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +77,7 @@
 		C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservable.swift; sourceTree = "<group>"; };
 		C92833B021E6007300BE56AC /* RealmObjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectError.swift; sourceTree = "<group>"; };
 		C92833B221E6024E00BE56AC /* TestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestModel.swift; sourceTree = "<group>"; };
+		C92833B621E602B400BE56AC /* ObjectObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservableTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +142,7 @@
 				C92833A521E5EE1B00BE56AC /* Model */,
 				C928339D21E5ECF200BE56AC /* Extension */,
 				C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */,
+				C92833B621E602B400BE56AC /* ObjectObservableTests.swift */,
 				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
 				C928337F21E5D4E200BE56AC /* Info.plist */,
 			);
@@ -325,6 +328,7 @@
 				C92833B321E6024E00BE56AC /* TestModel.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
+				C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
