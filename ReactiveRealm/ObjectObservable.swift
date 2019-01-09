@@ -23,7 +23,7 @@ extension Object: ObjectObservable {
     
 }
 
-extension Reactive where Base: ObjectObservable {
+public extension Reactive where Base: ObjectObservable {
     
     var changes: SignalProducer<Base, RealmObjectError> {
         return SignalProducer<Base, RealmObjectError> { observer, lifetime in
