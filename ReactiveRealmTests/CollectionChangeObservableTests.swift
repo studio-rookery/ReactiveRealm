@@ -64,7 +64,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssert(error?.error is TestError)
+        XCTAssertEqual(error?.error as NSError?, TestError.test)
     }
     
     func testPropertyIgnoreError() {

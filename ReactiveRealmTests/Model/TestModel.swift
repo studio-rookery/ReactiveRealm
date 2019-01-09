@@ -9,8 +9,8 @@
 import Foundation
 @testable import ReactiveRealm
 
-enum TestError: Error {
-    case test
+enum TestError {
+    static let test = NSError(domain: "com.studio-rookery.error", code: 0, userInfo: nil)
 }
 
 final class MockToken: NotificationTokenProtocol {
