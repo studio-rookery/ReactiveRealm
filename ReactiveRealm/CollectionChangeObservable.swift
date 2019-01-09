@@ -60,7 +60,7 @@ public extension Reactive where Base: CollectionChangeObservable {
         }
     }
     
-    var collections: ReactiveSwift.Property<Base> {
+    var property: ReactiveSwift.Property<Base> {
         return Property(initial: base, then: changes.flatMapError { _ in .empty })
     }
 }
