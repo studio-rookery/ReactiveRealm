@@ -89,19 +89,6 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
 }
 
-enum TestError: Error {
-    case test
-}
-
-final private class MockToken: NotificationTokenProtocol {
-    
-    private(set) var isInvalidated = false
-    
-    func invalidate() {
-        isInvalidated = true
-    }
-}
-
 final private class StubObservable: CollectionChangeObservable {
     
     typealias Element = Int

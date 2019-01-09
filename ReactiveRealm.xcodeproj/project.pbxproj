@@ -26,6 +26,7 @@
 		C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */; };
 		C92833AF21E5FFC200BE56AC /* ObjectObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */; };
 		C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B021E6007300BE56AC /* RealmObjectError.swift */; };
+		C92833B321E6024E00BE56AC /* TestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B221E6024E00BE56AC /* TestModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 		C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionChangeObservableTests.swift; sourceTree = "<group>"; };
 		C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservable.swift; sourceTree = "<group>"; };
 		C92833B021E6007300BE56AC /* RealmObjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectError.swift; sourceTree = "<group>"; };
+		C92833B221E6024E00BE56AC /* TestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,6 +170,7 @@
 			children = (
 				C92833A621E5EE6A00BE56AC /* Person.swift */,
 				C92833A821E5EE9300BE56AC /* Dog.swift */,
+				C92833B221E6024E00BE56AC /* TestModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 				C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */,
 				C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */,
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
+				C92833B321E6024E00BE56AC /* TestModel.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
 			);
