@@ -1,0 +1,14 @@
+#  Carthage.xcfilelist
+#  ReactiveRealm
+#
+#  Created by hirano masaki on 2019/01/09.
+#  Copyright © 2019 ReactiveRealm. All rights reserved.
+
+# This file may be set as an input or output file list for a shell script build phase.
+# List file paths below; one per line. These paths will be considered inputs or outputs for the script phase.
+# Build settings will be expanded, e.g. $(SRCROOT)/fileName
+
+$(SRCROOT)/Carthage/Build/iOS/Result.framework
+$(SRCROOT)/Carthage/Build/iOS/ReactiveSwift.framework
+$(SRCROOT)/Carthage/Build/iOS/Realm.framework
+$(SRCROOT)/Carthage/Build/iOS/RealmSwift.framework
