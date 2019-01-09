@@ -13,7 +13,26 @@ import ReactiveSwift
 
 final class ResultsTests: XCTestCase {
     
-    func testSendInitialValueSynchronously() {
+    func testRetainResultsWhileObservation() {
+        let realm = Realm.inMemory()
+        var results: Results<Person>! = realm.objects(Person.self)
+        weak var weakResults: Results<Person>? = results
+        
+        let disposable = results.reactive.changes.start()
+        
+        results = nil
+        XCTAssertNotNil(weakResults)
+        
+        disposable.dispose()
+        XCTAssertNil(weakResults)
+    }
+}
+
+// MARK: - Changes
+
+extension ResultsTests {
+    
+    func testChangesSendInitialValueSynchronously() {
         let person = Person()
         
         let realm = Realm.inMemory()
@@ -31,7 +50,7 @@ final class ResultsTests: XCTestCase {
         XCTAssert(initialValue!.first!.isSameObject(as: person))
     }
     
-    func testSendValueWhenUpdated() {
+    func testChangesSendValueWhenUpdated() {
         let person = Person()
         let realm = Realm.inMemory()
         let changes = realm.objects(Person.self).reactive.changes
