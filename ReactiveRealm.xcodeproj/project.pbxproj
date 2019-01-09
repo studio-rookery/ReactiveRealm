@@ -24,6 +24,8 @@
 		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 		C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */; };
 		C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */; };
+		C92833AF21E5FFC200BE56AC /* ObjectObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */; };
+		C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B021E6007300BE56AC /* RealmObjectError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,8 @@
 		C92833A821E5EE9300BE56AC /* Dog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dog.swift; sourceTree = "<group>"; };
 		C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationTokenProtocol.swift; sourceTree = "<group>"; };
 		C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionChangeObservableTests.swift; sourceTree = "<group>"; };
+		C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservable.swift; sourceTree = "<group>"; };
+		C92833B021E6007300BE56AC /* RealmObjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +126,8 @@
 				C928338921E5E90D00BE56AC /* Carthage.xcfilelist */,
 				C928339521E5EA7D00BE56AC /* CollectionChangeObservable.swift */,
 				C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */,
+				C92833AE21E5FFC200BE56AC /* ObjectObservable.swift */,
+				C92833B021E6007300BE56AC /* RealmObjectError.swift */,
 			);
 			path = ReactiveRealm;
 			sourceTree = "<group>";
@@ -299,8 +305,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C92833AF21E5FFC200BE56AC /* ObjectObservable.swift in Sources */,
 				C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */,
 				C928339621E5EA7D00BE56AC /* CollectionChangeObservable.swift in Sources */,
+				C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
