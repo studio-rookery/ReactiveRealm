@@ -74,3 +74,45 @@ extension ResultsTests {
         XCTAssert(results!.first!.isSameObject(as: person))
     }
 }
+
+// MARK: - Property
+
+extension ResultsTests {
+    
+    func testPropertyInitialValue() {
+        let person = Person()
+        
+        let realm = Realm.inMemory()
+        try! realm.write {
+            realm.add(person)
+        }
+        
+        let property = realm.objects(Person.self).reactive.property
+        XCTAssert(property.value.first!.isSameObject(as: person))
+    }
+    
+    func testPropertySendValueWhenUpdated() {
+        let person = Person()
+        let realm = Realm.inMemory()
+        let property = realm.objects(Person.self).reactive.property
+        
+        let exp = expectation(description: #function)
+        
+        var results: Results<Person>?
+        property
+            .producer
+            .skip(first: 1) // ignore initial value
+            .startWithResult { result in
+                results = result.value
+                exp.fulfill()
+            }
+        
+        try! realm.write {
+            realm.add(person)
+        }
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssert(results!.first!.isSameObject(as: person))
+    }
+}
