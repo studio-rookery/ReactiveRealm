@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C928337921E5D4E200BE56AC /* ReactiveRealm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928336F21E5D4E200BE56AC /* ReactiveRealm.framework */; };
-		C928337E21E5D4E200BE56AC /* ReactiveRealmTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928337D21E5D4E200BE56AC /* ReactiveRealmTests.swift */; };
 		C928338021E5D4E200BE56AC /* ReactiveRealm.h in Headers */ = {isa = PBXBuildFile; fileRef = C928337221E5D4E200BE56AC /* ReactiveRealm.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C928338F21E5E96500BE56AC /* ReactiveSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338B21E5E96500BE56AC /* ReactiveSwift.framework */; };
 		C928339021E5E96500BE56AC /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; };
@@ -56,7 +55,6 @@
 		C928337221E5D4E200BE56AC /* ReactiveRealm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactiveRealm.h; sourceTree = "<group>"; };
 		C928337321E5D4E200BE56AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C928337821E5D4E200BE56AC /* ReactiveRealmTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReactiveRealmTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C928337D21E5D4E200BE56AC /* ReactiveRealmTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactiveRealmTests.swift; sourceTree = "<group>"; };
 		C928337F21E5D4E200BE56AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C928338921E5E90D00BE56AC /* Carthage.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = Carthage.xcfilelist; sourceTree = "<group>"; };
 		C928338B21E5E96500BE56AC /* ReactiveSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveSwift.framework; path = Carthage/Build/iOS/ReactiveSwift.framework; sourceTree = "<group>"; };
@@ -128,7 +126,6 @@
 			children = (
 				C92833A521E5EE1B00BE56AC /* Model */,
 				C928339D21E5ECF200BE56AC /* Extension */,
-				C928337D21E5D4E200BE56AC /* ReactiveRealmTests.swift */,
 				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
 				C928337F21E5D4E200BE56AC /* Info.plist */,
 			);
@@ -308,7 +305,6 @@
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
-				C928337E21E5D4E200BE56AC /* ReactiveRealmTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
