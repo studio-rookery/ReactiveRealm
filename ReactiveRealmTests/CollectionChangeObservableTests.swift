@@ -77,6 +77,16 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         XCTAssertFalse(disposable.isDisposed)
     }
+    
+    func testInvalidate() {
+        let stub = StubObservable()
+        let disposable = stub.reactive.changes.start()
+        
+        XCTAssertEqual(stub.token.isInvalidated, false)
+        
+        disposable.dispose()
+        XCTAssertEqual(stub.token.isInvalidated, true)
+    }
 }
 
 enum TestError: Error {
@@ -100,12 +110,14 @@ final private class StubObservable: CollectionChangeObservable {
     
     var id = UUID().uuidString
     
+    let token = MockToken()
+    
     private var block: ((RealmCollectionChange<StubObservable>) -> ())?
     
     func observe(_ block: @escaping (RealmCollectionChange<StubObservable>) -> ()) -> MockToken {
         self.block = block
         sendInitial()
-        return MockToken()
+        return token
     }
     
     func sendInitial() {
