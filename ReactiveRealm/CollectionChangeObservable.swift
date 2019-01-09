@@ -15,7 +15,9 @@ public protocol CollectionChangeObservable: ReactiveExtensionsProvider {
     
     associatedtype Element: RealmCollectionValue
     
-    func observe(_ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationToken
+    associatedtype NotificationTokenType: NotificationTokenProtocol
+    
+    func observe(_ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
 }
 
 extension Results: CollectionChangeObservable {
