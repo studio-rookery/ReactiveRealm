@@ -96,6 +96,27 @@ final class ObjectObservableTests: XCTestCase {
         XCTAssertEqual(object.isInvalidated, true)
         XCTAssertEqual(object.reactive.isInvalidated.value, object.isInvalidated)
     }
+    
+    func testProperty() {
+        let object = StubObject()
+        let property = object.reactive.property
+        
+        XCTAssertEqual(property.value.id, object.id)
+        
+        let exp = expectation(description: #function)
+        
+        var changed = false
+        property.signal.observeValues { _ in
+            changed = true
+            exp.fulfill()
+        }
+        
+        object.sendChange()
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssertEqual(changed, true)
+    }
 }
 
 final class StubObject: ObjectObservable, ReactiveExtensionsProvider {
