@@ -23,6 +23,7 @@
 		C92833A721E5EE6A00BE56AC /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A621E5EE6A00BE56AC /* Person.swift */; };
 		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 		C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */; };
+		C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,6 +69,7 @@
 		C92833A621E5EE6A00BE56AC /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
 		C92833A821E5EE9300BE56AC /* Dog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dog.swift; sourceTree = "<group>"; };
 		C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationTokenProtocol.swift; sourceTree = "<group>"; };
+		C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionChangeObservableTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +131,7 @@
 			children = (
 				C92833A521E5EE1B00BE56AC /* Model */,
 				C928339D21E5ECF200BE56AC /* Extension */,
+				C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */,
 				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
 				C928337F21E5D4E200BE56AC /* Info.plist */,
 			);
@@ -305,6 +308,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */,
 				C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */,
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
