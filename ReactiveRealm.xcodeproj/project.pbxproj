@@ -14,6 +14,15 @@
 		C928339021E5E96500BE56AC /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; };
 		C928339121E5E96500BE56AC /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338D21E5E96500BE56AC /* Result.framework */; };
 		C928339221E5E96500BE56AC /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338E21E5E96500BE56AC /* Realm.framework */; };
+		C928339621E5EA7D00BE56AC /* CollectionChangeObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339521E5EA7D00BE56AC /* CollectionChangeObservable.swift */; };
+		C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339721E5ECB700BE56AC /* ResultsTests.swift */; };
+		C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */; };
+		C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338B21E5E96500BE56AC /* ReactiveSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338E21E5E96500BE56AC /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C92833A421E5EDBA00BE56AC /* Result.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338D21E5E96500BE56AC /* Result.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C92833A721E5EE6A00BE56AC /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A621E5EE6A00BE56AC /* Person.swift */; };
+		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +34,22 @@
 			remoteInfo = ReactiveRealm;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C92833A021E5EDAE00BE56AC /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */,
+				C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */,
+				C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */,
+				C92833A421E5EDBA00BE56AC /* Result.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C928336F21E5D4E200BE56AC /* ReactiveRealm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ReactiveRealm.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -38,6 +63,11 @@
 		C928338C21E5E96500BE56AC /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = Carthage/Build/iOS/RealmSwift.framework; sourceTree = "<group>"; };
 		C928338D21E5E96500BE56AC /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = Carthage/Build/iOS/Result.framework; sourceTree = "<group>"; };
 		C928338E21E5E96500BE56AC /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = Carthage/Build/iOS/Realm.framework; sourceTree = "<group>"; };
+		C928339521E5EA7D00BE56AC /* CollectionChangeObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionChangeObservable.swift; sourceTree = "<group>"; };
+		C928339721E5ECB700BE56AC /* ResultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsTests.swift; sourceTree = "<group>"; };
+		C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Realm+Extension.swift"; sourceTree = "<group>"; };
+		C92833A621E5EE6A00BE56AC /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
+		C92833A821E5EE9300BE56AC /* Dog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +118,7 @@
 				C928337221E5D4E200BE56AC /* ReactiveRealm.h */,
 				C928337321E5D4E200BE56AC /* Info.plist */,
 				C928338921E5E90D00BE56AC /* Carthage.xcfilelist */,
+				C928339521E5EA7D00BE56AC /* CollectionChangeObservable.swift */,
 			);
 			path = ReactiveRealm;
 			sourceTree = "<group>";
@@ -95,7 +126,10 @@
 		C928337C21E5D4E200BE56AC /* ReactiveRealmTests */ = {
 			isa = PBXGroup;
 			children = (
+				C92833A521E5EE1B00BE56AC /* Model */,
+				C928339D21E5ECF200BE56AC /* Extension */,
 				C928337D21E5D4E200BE56AC /* ReactiveRealmTests.swift */,
+				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
 				C928337F21E5D4E200BE56AC /* Info.plist */,
 			);
 			path = ReactiveRealmTests;
@@ -110,6 +144,23 @@
 				C928338D21E5E96500BE56AC /* Result.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C928339D21E5ECF200BE56AC /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		C92833A521E5EE1B00BE56AC /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C92833A621E5EE6A00BE56AC /* Person.swift */,
+				C92833A821E5EE9300BE56AC /* Dog.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -152,6 +203,7 @@
 				C928337421E5D4E200BE56AC /* Sources */,
 				C928337521E5D4E200BE56AC /* Frameworks */,
 				C928337621E5D4E200BE56AC /* Resources */,
+				C92833A021E5EDAE00BE56AC /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -175,6 +227,7 @@
 				TargetAttributes = {
 					C928336E21E5D4E200BE56AC = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
 					};
 					C928337721E5D4E200BE56AC = {
 						CreatedOnToolsVersion = 10.1;
@@ -243,6 +296,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C928339621E5EA7D00BE56AC /* CollectionChangeObservable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +304,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */,
+				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
+				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
+				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
 				C928337E21E5D4E200BE56AC /* ReactiveRealmTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -390,6 +448,7 @@
 		C928338421E5D4E200BE56AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -412,6 +471,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -420,6 +480,7 @@
 		C928338521E5D4E200BE56AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -450,8 +511,13 @@
 		C928338721E5D4E200BE56AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PG368YE8W5;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = ReactiveRealmTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -468,8 +534,13 @@
 		C928338821E5D4E200BE56AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PG368YE8W5;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = ReactiveRealmTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
