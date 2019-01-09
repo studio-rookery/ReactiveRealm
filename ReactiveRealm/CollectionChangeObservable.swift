@@ -13,8 +13,6 @@ import RealmSwift
 
 public protocol CollectionChangeObservable: ReactiveExtensionsProvider {
     
-    associatedtype Element: RealmCollectionValue
-    
     associatedtype NotificationTokenType: NotificationTokenProtocol
     
     func observe(_ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
