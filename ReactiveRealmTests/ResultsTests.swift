@@ -115,4 +115,31 @@ extension ResultsTests {
         
         XCTAssert(results!.first!.isSameObject(as: person))
     }
+    
+    func testFirst() {
+        let defaultPerson = Person()
+        let realm = Realm.inMemory()
+        
+        let first = realm.objects(Person.self).reactive.first(or: defaultPerson)
+        
+        XCTAssert(first.value.isSameObject(as: defaultPerson))
+        
+        let exp = expectation(description: #function)
+        
+        let newPerson = Person()
+        
+        var updated: Person?
+        first.signal.observeValues {
+            updated = $0
+            exp.fulfill()
+        }
+        
+        try! realm.write {
+            realm.add(newPerson)
+        }
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssert(updated?.isSameObject(as: newPerson) ?? false)
+    }
 }

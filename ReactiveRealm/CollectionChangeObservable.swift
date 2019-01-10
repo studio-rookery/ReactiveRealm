@@ -64,3 +64,10 @@ public extension Reactive where Base: CollectionChangeObservable {
         return Property(initial: base, then: changes.ignoreError())
     }
 }
+
+public extension Reactive where Base: CollectionChangeObservable & Collection, Base.Element: Object {
+    
+    func first(or default: @autoclosure @escaping () -> Base.Element = Base.Element()) -> ReactiveSwift.Property<Base.Element> {
+        return property.map { $0.first ?? `default`() }
+    }
+}
