@@ -52,11 +52,11 @@ final class ListTests: XCTestCase {
 extension XCTestCase {
     
     @discardableResult
-    func wait<T, E>(_ signal: Signal<T, E>, timeout: TimeInterval = 1, name: String = #function, after action: () -> Void) -> Result<T, E>? {
+    func wait<T>(_ signal: T, timeout: TimeInterval = 1, name: String = #function, after action: () -> Void) -> Result<T.Value, T.Error>? where T: SignalProducerConvertible {
         let exp = expectation(description: name)
-        var result: Result<T, E>?
+        var result: Result<T.Value, T.Error>?
         
-        signal.take(first: 1).observeResult {
+        signal.producer.take(first: 1).startWithResult {
             result = $0
             exp.fulfill()
         }
