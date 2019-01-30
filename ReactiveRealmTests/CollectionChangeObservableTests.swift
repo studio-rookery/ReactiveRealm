@@ -51,7 +51,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     
     func testChangesSendInitialValueSynchronously() {
         let stub = StubObservable()
-        let changes = stub.reactive.changes
+        let changes = stub.reactive.producer
         var initialValue: StubObservable?
         
         changes.startWithResult { result in
@@ -63,7 +63,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     
     func testChangesSendValueWhenUpdated() {
         let stub = StubObservable()
-        let changes = stub.reactive.changes
+        let changes = stub.reactive.producer
         
         let exp = expectation(description: #function)
         
@@ -84,7 +84,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     
     func testChangesSendError() {
         let stub = StubObservable()
-        let changes = stub.reactive.changes
+        let changes = stub.reactive.producer
         
         let exp = expectation(description: #function)
         
@@ -116,7 +116,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     
     func testInvalidate() {
         let stub = StubObservable()
-        let disposable = stub.reactive.changes.start()
+        let disposable = stub.reactive.producer.start()
         
         XCTAssertEqual(stub.token.isInvalidated, false)
         

@@ -18,7 +18,7 @@ final class ResultsTests: XCTestCase {
         var results: Results<Person>! = realm.objects(Person.self)
         weak var weakResults: Results<Person>? = results
         
-        let disposable = results.reactive.changes.start()
+        let disposable = results.reactive.producer.start()
         
         results = nil
         XCTAssertNotNil(weakResults)
@@ -40,7 +40,7 @@ extension ResultsTests {
             realm.add(person)
         }
         
-        let changes = realm.objects(Person.self).reactive.changes
+        let changes = realm.objects(Person.self).reactive.producer
         var initialValue: Results<Person>?
         
         changes.startWithResult { result in
@@ -53,7 +53,7 @@ extension ResultsTests {
     func testChangesSendValueWhenUpdated() {
         let person = Person()
         let realm = Realm.inMemory()
-        let changes = realm.objects(Person.self).reactive.changes
+        let changes = realm.objects(Person.self).reactive.producer
         
         let exp = expectation(description: #function)
         

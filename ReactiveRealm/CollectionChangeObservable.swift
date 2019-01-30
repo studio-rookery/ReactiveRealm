@@ -48,7 +48,7 @@ public extension Reactive where Base: CollectionChangeObservable {
         }
     }
     
-    var changes: SignalProducer<Base, AnyError> {
+    var producer: SignalProducer<Base, AnyError> {
         return SignalProducer<Base, AnyError> { observer, lifetime in
             
             observer.send(value: self.base)
@@ -71,7 +71,7 @@ public extension Reactive where Base: CollectionChangeObservable {
     }
     
     var property: ReactiveSwift.Property<Base> {
-        return Property(initial: base, then: changes.ignoreError())
+        return Property(initial: base, then: producer.ignoreError())
     }
 }
 
