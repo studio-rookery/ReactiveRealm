@@ -38,6 +38,16 @@ extension LinkingObjects: CollectionChangeObservable {
 
 public extension Reactive where Base: CollectionChangeObservable {
     
+    var changeset: SignalProducer<RealmCollectionChange<Base>, NoError> {
+        return SignalProducer<RealmCollectionChange<Base>, NoError> { observer, lifetime in
+            let token = self.base.observe(observer.send(value: ))
+            
+            lifetime.observeEnded {
+                token.invalidate()
+            }
+        }
+    }
+    
     var changes: SignalProducer<Base, AnyError> {
         return SignalProducer<Base, AnyError> { observer, lifetime in
             

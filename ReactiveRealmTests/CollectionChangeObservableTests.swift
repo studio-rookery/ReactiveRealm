@@ -9,9 +9,45 @@
 import XCTest
 import Result
 import RealmSwift
+import ReactiveSwift
 @testable import ReactiveRealm
 
+extension RealmCollectionChange: Equatable where CollectionType: Equatable {
+    
+    public static func == (lhs: RealmCollectionChange<CollectionType>, rhs: RealmCollectionChange<CollectionType>) -> Bool {
+        switch (lhs, rhs) {
+        case (.initial(let left), .initial(let right)):
+            return left == right
+        case (.update(let left), .update(let right)):
+            return left == right
+        case (.error(let left), .error(let right)):
+            return left == right
+        default:
+            return false
+        }
+    }
+}
+
 final class CollectionChangeObservableTests: XCTestCase {
+    
+    func testChangeset() {
+        let stub = StubObservable()
+        let changest = stub.reactive.changeset
+        
+        var events: [Signal<RealmCollectionChange<StubObservable>, NoError>.Event] = []
+        changest.start {
+            events.append($0)
+        }
+        
+        stub.sendUpdate()
+        stub.sendError()
+        
+        XCTAssertEqual(events, [
+            .value(.initial(stub)),
+            .value(.update(stub, deletions: [], insertions: [], modifications: [])),
+            .value(.error(AnyError(TestError.test)))
+        ])
+    }
     
     func testChangesSendInitialValueSynchronously() {
         let stub = StubObservable()
@@ -89,7 +125,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
 }
 
-final private class StubObservable: CollectionChangeObservable {
+final private class StubObservable: CollectionChangeObservable, Equatable {
     
     typealias Element = Int
     
@@ -117,5 +153,9 @@ final private class StubObservable: CollectionChangeObservable {
     
     func sendError() {
         block?(.error(AnyError(TestError.test)))
+    }
+    
+    static func == (lhs: StubObservable, rhs: StubObservable) -> Bool {
+        return lhs.id == rhs.id
     }
 }
