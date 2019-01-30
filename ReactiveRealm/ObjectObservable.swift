@@ -19,7 +19,7 @@ public protocol ObjectObservable {
     func observe(_ block: @escaping (ObjectChange) -> ()) -> NotificationTokenType
 }
 
-extension Object: ObjectObservable {
+extension Object: ObjectObservable, ReactiveExtensionsProvider {
     
 }
 
