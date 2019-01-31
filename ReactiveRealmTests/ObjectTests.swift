@@ -58,4 +58,50 @@ final class ObjectTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testIsInvalidated() {
+        let realm = Realm.inMemory()
+        
+        let person = Person()
+        
+        try! realm.write {
+            realm.add(person)
+        }
+        
+        let isInvalidated = person.reactive.isInvalidated
+        
+        XCTAssertEqual(isInvalidated.value, false)
+        
+        let exp = expectation(description: #function)
+        
+        var isInvalidatedChanged = false
+        isInvalidated.signal.observeValues { _ in
+            isInvalidatedChanged = true
+            exp.fulfill()
+        }
+        
+        try! realm.write {
+            realm.delete(person)
+        }
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssertEqual(isInvalidatedChanged, true)
+    }
+    
+    func testIsInvalidatedInitialValue() {
+        let realm = Realm.inMemory()
+        
+        let person = Person()
+        
+        try! realm.write {
+            realm.add(person)
+        }
+        
+        try! realm.write {
+            realm.delete(person)
+        }
+        
+        XCTAssertEqual(person.reactive.isInvalidated.value, true)
+    }
 }
