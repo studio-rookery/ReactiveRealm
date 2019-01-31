@@ -59,6 +59,37 @@ final class ObjectTests: XCTestCase {
         }
     }
     
+    func testProperty() {
+        let realm = Realm.inMemory()
+        
+        let person = Person()
+        
+        try! realm.write {
+            realm.add(person)
+        }
+        
+        let property = person.reactive.property
+        
+        XCTAssertEqual(property.value, person)
+        XCTAssert(property.value.isSameObject(as: person))
+        
+        let exp = expectation(description: #function)
+        
+        var propertyChanged = false
+        property.signal.observeValues { _ in
+            propertyChanged = true
+            exp.fulfill()
+        }
+        
+        try! realm.write {
+            person.name = "test"
+        }
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssert(propertyChanged)
+    }
+    
     func testIsInvalidated() {
         let realm = Realm.inMemory()
         
