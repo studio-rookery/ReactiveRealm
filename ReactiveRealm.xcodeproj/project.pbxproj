@@ -31,6 +31,7 @@
 		C92833BA21E6081700BE56AC /* SignalProducer+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */; };
 		C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */; };
 		C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C52201916A00A1E8A1 /* ListTests.swift */; };
+		C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C722027BE100A1E8A1 /* ObjectTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,6 +85,7 @@
 		C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SignalProducer+Extension.swift"; sourceTree = "<group>"; };
 		C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalProducerTests.swift; sourceTree = "<group>"; };
 		C98A73C52201916A00A1E8A1 /* ListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTests.swift; sourceTree = "<group>"; };
+		C98A73C722027BE100A1E8A1 /* ObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +156,7 @@
 				C928337F21E5D4E200BE56AC /* Info.plist */,
 				C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */,
 				C98A73C52201916A00A1E8A1 /* ListTests.swift */,
+				C98A73C722027BE100A1E8A1 /* ObjectTests.swift */,
 			);
 			path = ReactiveRealmTests;
 			sourceTree = "<group>";
@@ -323,6 +326,7 @@
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
 				C92833B321E6024E00BE56AC /* TestModel.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
+				C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
 				C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */,
 				C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */,

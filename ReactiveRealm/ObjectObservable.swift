@@ -7,8 +7,9 @@
 //
 
 import Foundation
-import RealmSwift
+import Result
 import ReactiveSwift
+import RealmSwift
 
 public protocol ObjectObservable {
     
@@ -25,14 +26,12 @@ extension Object: ObjectObservable, ReactiveExtensionsProvider {
 
 public extension Reactive where Base: ObjectObservable {
     
-    var producer: SignalProducer<Base, RealmObjectError> {
-        return SignalProducer<Base, RealmObjectError> { observer, lifetime in
-            let object = self.base
-            
-            let token = object.observe { change in
+    var objectChange: SignalProducer<[PropertyChange], RealmObjectError> {
+        return SignalProducer<[PropertyChange], RealmObjectError> { observer, lifetime in
+            let token = self.base.observe { change in
                 switch change {
-                case .change:
-                    observer.send(value: object)
+                case .change(let propertyChanges):
+                    observer.send(value: propertyChanges)
                 case .deleted:
                     observer.send(error: .deleted)
                 case .error(let error):
@@ -44,6 +43,10 @@ public extension Reactive where Base: ObjectObservable {
                 token.invalidate()
             }
         }
+    }
+    
+    var producer: SignalProducer<Base, RealmObjectError> {
+        return objectChange.map(value: base)
     }
     
     var property: ReactiveSwift.Property<Base> {
