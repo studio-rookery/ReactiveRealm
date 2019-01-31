@@ -9,7 +9,7 @@
 import Foundation
 @testable import ReactiveRealm
 
-enum TestError {
+extension NSError {
     static let test = NSError(domain: "com.studio-rookery.error", code: 0, userInfo: nil)
 }
 

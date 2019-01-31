@@ -79,7 +79,7 @@ final class ObjectObservableTests: XCTestCase {
         
         switch error {
         case .unknown(let error as NSError)?:
-            XCTAssertEqual(error, TestError.test)
+            XCTAssertEqual(error, .test)
         default:
             XCTFail()
         }
@@ -141,7 +141,7 @@ final class StubObject: ObjectObservable, ReactiveExtensionsProvider {
     }
     
     func sendError() {
-        block?(.error(TestError.test))
+        block?(.error(.test))
     }
     
     func delete() {

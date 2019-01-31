@@ -45,7 +45,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         XCTAssertEqual(events, [
             .value(.initial(stub)),
             .value(.update(stub, deletions: [], insertions: [], modifications: [])),
-            .value(.error(AnyError(TestError.test)))
+            .value(.error(AnyError(NSError.test)))
         ])
     }
     
@@ -100,7 +100,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(error?.error as NSError?, TestError.test)
+        XCTAssertEqual(error?.error as NSError?, .test)
     }
     
     func testPropertyIgnoreError() {
@@ -152,7 +152,7 @@ final private class StubObservable: CollectionChangeObservable, Equatable {
     }
     
     func sendError() {
-        block?(.error(AnyError(TestError.test)))
+        block?(.error(AnyError(NSError.test)))
     }
     
     static func == (lhs: StubObservable, rhs: StubObservable) -> Bool {
