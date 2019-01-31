@@ -25,7 +25,7 @@ extension Object: ObjectObservable, ReactiveExtensionsProvider {
 
 public extension Reactive where Base: ObjectObservable {
     
-    var changes: SignalProducer<Base, RealmObjectError> {
+    var producer: SignalProducer<Base, RealmObjectError> {
         return SignalProducer<Base, RealmObjectError> { observer, lifetime in
             let object = self.base
             
@@ -47,7 +47,7 @@ public extension Reactive where Base: ObjectObservable {
     }
     
     var property: ReactiveSwift.Property<Base> {
-        return ReactiveSwift.Property(initial: base, then: changes.ignoreError())
+        return ReactiveSwift.Property(initial: base, then: producer.ignoreError())
     }
     
     var isInvalidated: ReactiveSwift.Property<Bool> {
@@ -56,7 +56,7 @@ public extension Reactive where Base: ObjectObservable {
             return Property(value: isInvalidated)
         }
         
-        let isDeleted = changes.map(value: false).mapError(to: true)
+        let isDeleted = producer.map(value: false).mapError(to: true)
         return Property(
             initial: isInvalidated,
             then: isDeleted

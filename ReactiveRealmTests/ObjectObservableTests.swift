@@ -22,7 +22,7 @@ final class ObjectObservableTests: XCTestCase {
         var updatedObject: StubObject?
         
         object.reactive
-            .changes
+            .producer
             .startWithResult { result in
                 updatedObject = result.value
                 exp.fulfill()
@@ -42,7 +42,7 @@ final class ObjectObservableTests: XCTestCase {
         
         var error: RealmObjectError?
         object.reactive
-            .changes
+            .producer
             .startWithFailed {
                 error = $0
                 exp.fulfill()
@@ -67,7 +67,7 @@ final class ObjectObservableTests: XCTestCase {
         
         var error: RealmObjectError?
         object.reactive
-            .changes
+            .producer
             .startWithFailed {
                 error = $0
                 exp.fulfill()
