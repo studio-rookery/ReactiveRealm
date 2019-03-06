@@ -125,7 +125,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
 }
 
-final private class StubObservable: CollectionChangeObservable, Equatable {
+final private class StubObservable: ObeservableCollection, Equatable {
     
     typealias Element = Int
     

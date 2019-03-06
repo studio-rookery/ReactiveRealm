@@ -119,7 +119,7 @@ final class ObjectObservableTests: XCTestCase {
     }
 }
 
-final class StubObject: ObjectObservable, ReactiveExtensionsProvider {
+final class StubObject: ObservableObject, ReactiveExtensionsProvider {
     
     typealias NotificationTokenType = MockToken
     

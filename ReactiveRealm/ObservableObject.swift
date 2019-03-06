@@ -11,7 +11,7 @@ import Result
 import ReactiveSwift
 import RealmSwift
 
-public protocol ObjectObservable {
+public protocol ObservableObject {
     
     associatedtype NotificationTokenType: NotificationTokenProtocol
     
@@ -20,11 +20,11 @@ public protocol ObjectObservable {
     func observe(_ block: @escaping (ObjectChange) -> ()) -> NotificationTokenType
 }
 
-extension Object: ObjectObservable, ReactiveExtensionsProvider {
+extension Object: ObservableObject, ReactiveExtensionsProvider {
     
 }
 
-public extension Reactive where Base: ObjectObservable {
+public extension Reactive where Base: ObservableObject {
     
     var objectChange: SignalProducer<[PropertyChange], RealmObjectError> {
         return SignalProducer<[PropertyChange], RealmObjectError> { observer, lifetime in

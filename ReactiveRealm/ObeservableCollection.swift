@@ -11,32 +11,32 @@ import Result
 import ReactiveSwift
 import RealmSwift
 
-public protocol CollectionChangeObservable: ReactiveExtensionsProvider {
+public protocol ObeservableCollection: ReactiveExtensionsProvider {
     
     associatedtype NotificationTokenType: NotificationTokenProtocol
     
     func observe(_ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
 }
 
-extension Results: CollectionChangeObservable {
+extension Results: ObeservableCollection {
     
 }
 
-extension List: CollectionChangeObservable {
+extension List: ObeservableCollection {
     
 }
 
-extension AnyRealmCollection: CollectionChangeObservable {
+extension AnyRealmCollection: ObeservableCollection {
     
 }
 
-extension LinkingObjects: CollectionChangeObservable {
+extension LinkingObjects: ObeservableCollection {
     
 }
 
 // MARK: -
 
-public extension Reactive where Base: CollectionChangeObservable {
+public extension Reactive where Base: ObeservableCollection {
     
     var changeset: SignalProducer<RealmCollectionChange<Base>, NoError> {
         return SignalProducer<RealmCollectionChange<Base>, NoError> { observer, lifetime in
@@ -75,7 +75,7 @@ public extension Reactive where Base: CollectionChangeObservable {
     }
 }
 
-public extension Reactive where Base: CollectionChangeObservable & Collection, Base.Element: Object {
+public extension Reactive where Base: ObeservableCollection & Collection, Base.Element: Object {
     
     func first(or default: @autoclosure @escaping () -> Base.Element = Base.Element()) -> ReactiveSwift.Property<Base.Element> {
         return property.map { $0.first ?? `default`() }
