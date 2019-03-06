@@ -21,7 +21,7 @@ final class ObjectTests: XCTestCase {
         
         realm.forceAdd(person)
         
-        let objectChange = person.reactive.objectChange
+        let objectChange = person.reactive.propertyChanges
         
         let exp = expectation(description: #function)
         

@@ -26,7 +26,7 @@ extension Object: ObservableObject, ReactiveExtensionsProvider {
 
 public extension Reactive where Base: ObservableObject {
     
-    var objectChange: SignalProducer<[PropertyChange], RealmObjectError> {
+    var propertyChanges: SignalProducer<[PropertyChange], RealmObjectError> {
         return SignalProducer<[PropertyChange], RealmObjectError> { observer, lifetime in
             let token = self.base.observe { change in
                 switch change {
@@ -46,7 +46,7 @@ public extension Reactive where Base: ObservableObject {
     }
     
     var producer: SignalProducer<Base, RealmObjectError> {
-        return objectChange.map(value: base)
+        return propertyChanges.map(value: base)
     }
     
     var property: ReactiveSwift.Property<Base> {
