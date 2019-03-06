@@ -118,34 +118,3 @@ final class ObjectObservableTests: XCTestCase {
         XCTAssertEqual(changed, true)
     }
 }
-
-final class MockObservableObject: ObservableObject, ReactiveExtensionsProvider {
-    
-    typealias NotificationTokenType = MockToken
-    
-    let token = MockToken()
-    
-    let id = UUID().uuidString
-    
-    private(set) var isInvalidated = false
-    
-    private var block: ((ObjectChange) -> ())?
-    
-    func observe(_ block: @escaping (ObjectChange) -> ()) -> MockToken {
-        self.block = block
-        return token
-    }
-    
-    func sendChange() {
-        block?(.change([]))
-    }
-    
-    func sendError() {
-        block?(.error(.test))
-    }
-    
-    func delete() {
-        isInvalidated = true
-        block?(.deleted)
-    }
-}

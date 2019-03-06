@@ -32,6 +32,8 @@
 		C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */; };
 		C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C52201916A00A1E8A1 /* ListTests.swift */; };
 		C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C722027BE100A1E8A1 /* ObjectTests.swift */; };
+		C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C1222F7A720027080F /* MockObservableObject.swift */; };
+		C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +88,8 @@
 		C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalProducerTests.swift; sourceTree = "<group>"; };
 		C98A73C52201916A00A1E8A1 /* ListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTests.swift; sourceTree = "<group>"; };
 		C98A73C722027BE100A1E8A1 /* ObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectTests.swift; sourceTree = "<group>"; };
+		C9B447C1222F7A720027080F /* MockObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockObservableObject.swift; sourceTree = "<group>"; };
+		C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockObservableCollection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +206,8 @@
 		C9B447C0222F7A190027080F /* Mock */ = {
 			isa = PBXGroup;
 			children = (
+				C9B447C1222F7A720027080F /* MockObservableObject.swift */,
+				C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */,
 			);
 			path = Mock;
 			sourceTree = "<group>";
@@ -336,6 +342,8 @@
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
 				C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
+				C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */,
+				C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */,
 				C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */,
 				C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */,
 			);

@@ -124,38 +124,3 @@ final class CollectionChangeObservableTests: XCTestCase {
         XCTAssertEqual(stub.token.isInvalidated, true)
     }
 }
-
-final private class MockObservableCollection: ObeservableCollection, Equatable {
-    
-    typealias Element = Int
-    
-    typealias NotificationTokenType = MockToken
-    
-    var id = UUID().uuidString
-    
-    let token = MockToken()
-    
-    private var block: ((RealmCollectionChange<MockObservableCollection>) -> ())?
-    
-    func observe(_ block: @escaping (RealmCollectionChange<MockObservableCollection>) -> ()) -> MockToken {
-        self.block = block
-        sendInitial()
-        return token
-    }
-    
-    func sendInitial() {
-        block?(.initial(self))
-    }
-    
-    func sendUpdate() {
-        block?(.update(self, deletions: [], insertions: [], modifications: []))
-    }
-    
-    func sendError() {
-        block?(.error(AnyError(NSError.test)))
-    }
-    
-    static func == (lhs: MockObservableCollection, rhs: MockObservableCollection) -> Bool {
-        return lhs.id == rhs.id
-    }
-}
