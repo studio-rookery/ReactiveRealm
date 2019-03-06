@@ -14,6 +14,23 @@ import RealmSwift
 
 final class ObjectTests: XCTestCase {
 
+    func testRetainObjectWhileObservation() {
+        let realm = Realm.inMemory()
+        
+        var person: Person? = Person()
+        realm.forceAdd(person!)
+        
+        let disposable = person!.reactive.propertyChanges.start()
+        
+        weak var weakPerson: Person? = person
+        person = nil
+        
+        XCTAssertNotNil(weakPerson)
+        
+        disposable.dispose()
+        XCTAssertNil(weakPerson)
+    }
+    
     func testPropertyChangesSendValue() {
         let realm = Realm.inMemory()
         

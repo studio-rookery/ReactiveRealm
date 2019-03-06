@@ -11,6 +11,7 @@ import Result
 import ReactiveSwift
 import RealmSwift
 
+/// `ObeservableCollection` is a protocol that has a common interface between `Results`, `List`,` LinkingObjects`, and `AnyRealmCollection`. Required interfaces are already implemented.
 public protocol ObeservableCollection: ReactiveExtensionsProvider {
     
     associatedtype NotificationTokenType: NotificationTokenProtocol
@@ -38,6 +39,9 @@ extension AnyRealmCollection: ObeservableCollection {
 
 public extension Reactive where Base: ObeservableCollection {
     
+    /// A producer that sends a value each time the collection is updated.
+    /// The initial value is sent on `start`.
+    /// When the realm of the collection notifies an error, the producer sends the error.
     var producer: SignalProducer<Base, AnyError> {
         return SignalProducer<Base, AnyError> { observer, lifetime in
             
@@ -60,6 +64,8 @@ public extension Reactive where Base: ObeservableCollection {
         }
     }
     
+    /// A property that sends its changes when the collection is updated.
+    /// When an error occured, the property completes and stops to send a value.
     var property: ReactiveSwift.Property<Base> {
         return Property(initial: base, then: producer.ignoreError())
     }
@@ -67,6 +73,11 @@ public extension Reactive where Base: ObeservableCollection {
 
 public extension Reactive where Base: ObeservableCollection & Collection, Base.Element: Object {
     
+    /// Returns a property that reflects the first element.
+    /// If the first element is nil, `default` is adopted for its value.
+    ///
+    /// - Parameter default: the value adopted when the first element is nil.
+    /// - Returns: A property that reflects the first element or the specified object.
     func first(or default: @autoclosure @escaping () -> Base.Element = Base.Element()) -> ReactiveSwift.Property<Base.Element> {
         return property.map { $0.first ?? `default`() }
     }

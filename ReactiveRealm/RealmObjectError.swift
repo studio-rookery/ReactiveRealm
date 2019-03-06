@@ -9,9 +9,12 @@
 import Foundation
 import RealmSwift
 
+/// `RealmObjectError` represents an error that could be emitted by realm during a observation for Object.
 public enum RealmObjectError: Error {
     
+    /// An error occured when the observed object was deleted.
     case deleted
     
+    /// An error occured when failed to open a realm.
     case unknown(Error)
 }

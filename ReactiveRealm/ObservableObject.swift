@@ -11,6 +11,7 @@ import Result
 import ReactiveSwift
 import RealmSwift
 
+/// `ObservableObject` is a protocol that abstracts `Object` for testing.
 public protocol ObservableObject {
     
     associatedtype NotificationTokenType: NotificationTokenProtocol
@@ -24,8 +25,12 @@ extension Object: ObservableObject, ReactiveExtensionsProvider {
     
 }
 
+// MARK: -
+
 public extension Reactive where Base: ObservableObject {
     
+    /// A producer that sends property changes each time the object's properties are updated.
+    /// When the realm notifies an error or the object is deleted, it ends with the error.
     var propertyChanges: SignalProducer<[PropertyChange], RealmObjectError> {
         return SignalProducer<[PropertyChange], RealmObjectError> { observer, lifetime in
             let token = self.base.observe { change in
@@ -45,14 +50,19 @@ public extension Reactive where Base: ObservableObject {
         }
     }
     
+    /// A producer that sends a value each time the object's properties are updated.
+    /// When the realm notifies an error or the object is deleted, it ends with the error.
     var producer: SignalProducer<Base, RealmObjectError> {
         return propertyChanges.map(value: base)
     }
     
+    /// A property that sends its changes when the object is updated.
     var property: ReactiveSwift.Property<Base> {
         return ReactiveSwift.Property(initial: base, then: producer.ignoreError())
     }
     
+    /// A property that its value is true while the object is valid
+    /// When the object is invalidated or an error occured, the value will be false.
     var isInvalidated: ReactiveSwift.Property<Bool> {
         let isInvalidated = base.isInvalidated
         guard !isInvalidated else {
@@ -66,4 +76,3 @@ public extension Reactive where Base: ObservableObject {
         )
     }
 }
-

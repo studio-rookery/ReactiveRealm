@@ -6,9 +6,9 @@
 //  Copyright © 2019 ReactiveRealm. All rights reserved.
 //
 
-import Foundation
 import RealmSwift
 
+/// `NotificationTokenProtocol` is a protocol that abstracts `NotificationToken` for testing.
 public protocol NotificationTokenProtocol {
     
     func invalidate()
