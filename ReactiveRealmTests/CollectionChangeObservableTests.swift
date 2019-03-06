@@ -30,42 +30,42 @@ extension RealmCollectionChange: Equatable where CollectionType: Equatable {
 
 final class CollectionChangeObservableTests: XCTestCase {
     
-    func testChangesSendInitialValueSynchronously() {
-        let stub = MockObservableCollection()
-        let changes = stub.reactive.producer
+    func testProducerSendInitialValueSynchronously() {
+        let collection = MockObservableCollection()
+        let changes = collection.reactive.producer
         var initialValue: MockObservableCollection?
         
         changes.startWithResult { result in
             initialValue = result.value
         }
         
-        XCTAssertEqual(initialValue?.id, stub.id)
+        XCTAssertEqual(initialValue?.id, collection.id)
     }
     
-    func testChangesSendValueWhenUpdated() {
-        let stub = MockObservableCollection()
-        let changes = stub.reactive.producer
+    func testProducerSendValueWhenUpdated() {
+        let collection = MockObservableCollection()
+        let changes = collection.reactive.producer
         
         let exp = expectation(description: #function)
         
-        var updatedStub: MockObservableCollection?
+        var updatedcollection: MockObservableCollection?
         changes
             .skip(first: 1) // ignore initial value
             .startWithResult { result in
-                updatedStub = result.value
+                updatedcollection = result.value
                 exp.fulfill()
-        }
+            }
         
-        stub.sendUpdate()
+        collection.sendUpdate()
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(updatedStub?.id, stub.id)
+        XCTAssertEqual(updatedcollection?.id, collection.id)
     }
     
     func testChangesSendError() {
-        let stub = MockObservableCollection()
-        let changes = stub.reactive.producer
+        let collection = MockObservableCollection()
+        let changes = collection.reactive.producer
         
         let exp = expectation(description: #function)
         
@@ -77,7 +77,7 @@ final class CollectionChangeObservableTests: XCTestCase {
                 exp.fulfill()
             }
         
-        stub.sendError()
+        collection.sendError()
         
         waitForExpectations(timeout: 1, handler: nil)
         
@@ -85,23 +85,23 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testPropertyIgnoreError() {
-        let stub = MockObservableCollection()
-        let property = stub.reactive.property
+        let collection = MockObservableCollection()
+        let property = collection.reactive.property
         
         let disposable = property.producer.start()
         
-        stub.sendError()
+        collection.sendError()
         
         XCTAssertFalse(disposable.isDisposed)
     }
     
     func testInvalidate() {
-        let stub = MockObservableCollection()
-        let disposable = stub.reactive.producer.start()
+        let collection = MockObservableCollection()
+        let disposable = collection.reactive.producer.start()
         
-        XCTAssertEqual(stub.token.isInvalidated, false)
+        XCTAssertEqual(collection.token.isInvalidated, false)
         
         disposable.dispose()
-        XCTAssertEqual(stub.token.isInvalidated, true)
+        XCTAssertEqual(collection.token.isInvalidated, true)
     }
 }

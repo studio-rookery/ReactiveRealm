@@ -19,12 +19,12 @@ final class ObjectObservableTests: XCTestCase {
         
         let exp = expectation(description: #function)
         
-        var updatedObject: MockObservableObject?
+        var updated = false
         
         object.reactive
             .producer
-            .startWithResult { result in
-                updatedObject = result.value
+            .startWithResult { _ in
+                updated = true
                 exp.fulfill()
             }
         
@@ -32,7 +32,7 @@ final class ObjectObservableTests: XCTestCase {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(updatedObject?.id, object.id)
+        XCTAssert(updated)
     }
     
     func testDelete() {
@@ -89,12 +89,12 @@ final class ObjectObservableTests: XCTestCase {
         let object = MockObservableObject()
         
         XCTAssertEqual(object.isInvalidated, false)
-        XCTAssertEqual(object.reactive.isInvalidated.value, object.isInvalidated)
+        XCTAssertEqual(object.reactive.isInvalidated.value, false)
         
         object.delete()
         
         XCTAssertEqual(object.isInvalidated, true)
-        XCTAssertEqual(object.reactive.isInvalidated.value, object.isInvalidated)
+        XCTAssertEqual(object.reactive.isInvalidated.value, true)
     }
     
     func testProperty() {
