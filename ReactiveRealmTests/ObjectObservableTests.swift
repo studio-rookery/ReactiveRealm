@@ -15,11 +15,11 @@ import RealmSwift
 final class ObjectObservableTests: XCTestCase {
     
     func testChangesSendValueWhenUpdated() {
-        let object = StubObject()
+        let object = MockObservableObject()
         
         let exp = expectation(description: #function)
         
-        var updatedObject: StubObject?
+        var updatedObject: MockObservableObject?
         
         object.reactive
             .producer
@@ -36,7 +36,7 @@ final class ObjectObservableTests: XCTestCase {
     }
     
     func testDelete() {
-        let object = StubObject()
+        let object = MockObservableObject()
         
         let exp = expectation(description: #function)
         
@@ -61,7 +61,7 @@ final class ObjectObservableTests: XCTestCase {
     }
     
     func testError() {
-        let object = StubObject()
+        let object = MockObservableObject()
         
         let exp = expectation(description: #function)
         
@@ -86,7 +86,7 @@ final class ObjectObservableTests: XCTestCase {
     }
     
     func testInitialInvalidatedValue() {
-        let object = StubObject()
+        let object = MockObservableObject()
         
         XCTAssertEqual(object.isInvalidated, false)
         XCTAssertEqual(object.reactive.isInvalidated.value, object.isInvalidated)
@@ -98,7 +98,7 @@ final class ObjectObservableTests: XCTestCase {
     }
     
     func testProperty() {
-        let object = StubObject()
+        let object = MockObservableObject()
         let property = object.reactive.property
         
         XCTAssertEqual(property.value.id, object.id)
@@ -119,7 +119,7 @@ final class ObjectObservableTests: XCTestCase {
     }
 }
 
-final class StubObject: ObservableObject, ReactiveExtensionsProvider {
+final class MockObservableObject: ObservableObject, ReactiveExtensionsProvider {
     
     typealias NotificationTokenType = MockToken
     

@@ -31,10 +31,10 @@ extension RealmCollectionChange: Equatable where CollectionType: Equatable {
 final class CollectionChangeObservableTests: XCTestCase {
     
     func testChangeset() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let changest = stub.reactive.changeset
         
-        var events: [Signal<RealmCollectionChange<StubObservable>, NoError>.Event] = []
+        var events: [Signal<RealmCollectionChange<MockObservableCollection>, NoError>.Event] = []
         changest.start {
             events.append($0)
         }
@@ -50,9 +50,9 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testChangesSendInitialValueSynchronously() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let changes = stub.reactive.producer
-        var initialValue: StubObservable?
+        var initialValue: MockObservableCollection?
         
         changes.startWithResult { result in
             initialValue = result.value
@@ -62,12 +62,12 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testChangesSendValueWhenUpdated() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let changes = stub.reactive.producer
         
         let exp = expectation(description: #function)
         
-        var updatedStub: StubObservable?
+        var updatedStub: MockObservableCollection?
         changes
             .skip(first: 1) // ignore initial value
             .startWithResult { result in
@@ -83,7 +83,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testChangesSendError() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let changes = stub.reactive.producer
         
         let exp = expectation(description: #function)
@@ -104,7 +104,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testPropertyIgnoreError() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let property = stub.reactive.property
         
         let disposable = property.producer.start()
@@ -115,7 +115,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
     
     func testInvalidate() {
-        let stub = StubObservable()
+        let stub = MockObservableCollection()
         let disposable = stub.reactive.producer.start()
         
         XCTAssertEqual(stub.token.isInvalidated, false)
@@ -125,7 +125,7 @@ final class CollectionChangeObservableTests: XCTestCase {
     }
 }
 
-final private class StubObservable: ObeservableCollection, Equatable {
+final private class MockObservableCollection: ObeservableCollection, Equatable {
     
     typealias Element = Int
     
@@ -135,9 +135,9 @@ final private class StubObservable: ObeservableCollection, Equatable {
     
     let token = MockToken()
     
-    private var block: ((RealmCollectionChange<StubObservable>) -> ())?
+    private var block: ((RealmCollectionChange<MockObservableCollection>) -> ())?
     
-    func observe(_ block: @escaping (RealmCollectionChange<StubObservable>) -> ()) -> MockToken {
+    func observe(_ block: @escaping (RealmCollectionChange<MockObservableCollection>) -> ()) -> MockToken {
         self.block = block
         sendInitial()
         return token
@@ -155,7 +155,7 @@ final private class StubObservable: ObeservableCollection, Equatable {
         block?(.error(AnyError(NSError.test)))
     }
     
-    static func == (lhs: StubObservable, rhs: StubObservable) -> Bool {
+    static func == (lhs: MockObservableCollection, rhs: MockObservableCollection) -> Bool {
         return lhs.id == rhs.id
     }
 }

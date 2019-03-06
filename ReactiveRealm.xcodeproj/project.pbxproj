@@ -150,6 +150,7 @@
 			children = (
 				C92833A521E5EE1B00BE56AC /* Model */,
 				C928339D21E5ECF200BE56AC /* Extension */,
+				C9B447C0222F7A190027080F /* Mock */,
 				C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */,
 				C92833B621E602B400BE56AC /* ObjectObservableTests.swift */,
 				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
@@ -196,6 +197,13 @@
 				C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */,
 			);
 			path = Extension;
+			sourceTree = "<group>";
+		};
+		C9B447C0222F7A190027080F /* Mock */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Mock;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
