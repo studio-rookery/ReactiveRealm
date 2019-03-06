@@ -19,9 +19,7 @@ final class ObjectTests: XCTestCase {
         
         let person = Person()
         
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let objectChange = person.reactive.objectChange
         
@@ -33,11 +31,11 @@ final class ObjectTests: XCTestCase {
             exp.fulfill()
         }
         
-        try! realm.write {
+        realm.forceWrite {
             person.name = "test"
         }
         
-        try! realm.write {
+        realm.forceWrite {
             realm.delete(person)
         }
         
@@ -64,7 +62,7 @@ final class ObjectTests: XCTestCase {
         
         let person = Person()
         
-        try! realm.write {
+        realm.forceWrite {
             realm.add(person)
         }
         
@@ -81,7 +79,7 @@ final class ObjectTests: XCTestCase {
             exp.fulfill()
         }
         
-        try! realm.write {
+        realm.forceWrite {
             person.name = "test"
         }
         
@@ -95,7 +93,7 @@ final class ObjectTests: XCTestCase {
         
         let person = Person()
         
-        try! realm.write {
+        realm.forceWrite {
             realm.add(person)
         }
         
@@ -111,7 +109,7 @@ final class ObjectTests: XCTestCase {
             exp.fulfill()
         }
         
-        try! realm.write {
+        realm.forceWrite {
             realm.delete(person)
         }
         
@@ -125,13 +123,9 @@ final class ObjectTests: XCTestCase {
         
         let person = Person()
         
-        try! realm.write {
-            realm.add(person)
-        }
-        
-        try! realm.write {
-            realm.delete(person)
-        }
+        // make person invalidated
+        realm.forceAdd(person)
+        realm.forceDelete(person)
         
         XCTAssertEqual(person.reactive.isInvalidated.value, true)
     }

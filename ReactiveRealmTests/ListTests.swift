@@ -19,9 +19,7 @@ final class ListTests: XCTestCase {
         
         let person = Person()
         
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let list = person.dogs.reactive.property
         XCTAssert(list.value.isEmpty)
@@ -29,7 +27,7 @@ final class ListTests: XCTestCase {
         let dogs = [Dog(), Dog()]
         
         wait(list.signal, after: {
-            try! realm.write {
+            realm.forceWrite {
                 person.dogs.append(objectsIn: dogs)
             }
         })
@@ -39,7 +37,7 @@ final class ListTests: XCTestCase {
         XCTAssert(list.value[1].isSameObject(as: dogs[1]))
         
         wait(list.signal, after: {
-            try! realm.write {
+            realm.forceWrite {
                 person.dogs.remove(at: 1)
             }
         })

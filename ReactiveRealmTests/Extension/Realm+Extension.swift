@@ -16,4 +16,20 @@ extension Realm {
         configuration.inMemoryIdentifier = identifier
         return try! Realm(configuration: configuration)
     }
+    
+    func forceWrite(_ block: () -> Void) {
+        try! write(block)
+    }
+    
+    func forceAdd(_ object: Object) {
+        forceWrite {
+            add(object)
+        }
+    }
+    
+    func forceDelete(_ object: Object) {
+        forceWrite {
+            delete(object)
+        }
+    }
 }

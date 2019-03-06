@@ -36,9 +36,7 @@ extension ResultsTests {
         let person = Person()
         
         let realm = Realm.inMemory()
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let changes = realm.objects(Person.self).reactive.producer
         var initialValue: Results<Person>?
@@ -65,9 +63,7 @@ extension ResultsTests {
                 exp.fulfill()
             }
         
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         waitForExpectations(timeout: 1, handler: nil)
         
@@ -83,9 +79,7 @@ extension ResultsTests {
         let person = Person()
         
         let realm = Realm.inMemory()
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let property = realm.objects(Person.self).reactive.property
         XCTAssert(property.value.first!.isSameObject(as: person))
@@ -107,9 +101,7 @@ extension ResultsTests {
                 exp.fulfill()
             }
         
-        try! realm.write {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         waitForExpectations(timeout: 1, handler: nil)
         
@@ -134,9 +126,7 @@ extension ResultsTests {
             exp.fulfill()
         }
         
-        try! realm.write {
-            realm.add(newPerson)
-        }
+        realm.forceAdd(newPerson)
         
         waitForExpectations(timeout: 1, handler: nil)
         
