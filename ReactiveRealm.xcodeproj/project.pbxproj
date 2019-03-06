@@ -23,17 +23,20 @@
 		C92833A721E5EE6A00BE56AC /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A621E5EE6A00BE56AC /* Person.swift */; };
 		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 		C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */; };
-		C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */; };
+		C92833AD21E5F8A300BE56AC /* ObservableCollectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AC21E5F8A300BE56AC /* ObservableCollectionTests.swift */; };
 		C92833AF21E5FFC200BE56AC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AE21E5FFC200BE56AC /* ObservableObject.swift */; };
 		C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B021E6007300BE56AC /* RealmObjectError.swift */; };
-		C92833B321E6024E00BE56AC /* TestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B221E6024E00BE56AC /* TestModel.swift */; };
-		C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B621E602B400BE56AC /* ObjectObservableTests.swift */; };
+		C92833B321E6024E00BE56AC /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B221E6024E00BE56AC /* Error.swift */; };
+		C92833B721E602B400BE56AC /* ObservableObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B621E602B400BE56AC /* ObservableObjectTests.swift */; };
 		C92833BA21E6081700BE56AC /* SignalProducer+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */; };
 		C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */; };
 		C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C52201916A00A1E8A1 /* ListTests.swift */; };
 		C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C722027BE100A1E8A1 /* ObjectTests.swift */; };
 		C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C1222F7A720027080F /* MockObservableObject.swift */; };
 		C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */; };
+		F489FD96222FF3EC0018E679 /* MockToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD95222FF3EC0018E679 /* MockToken.swift */; };
+		F489FD98222FF5850018E679 /* RealmCollectionChange+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */; };
+		F489FD9A222FFC8F0018E679 /* LinkingObjectsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,17 +82,20 @@
 		C92833A621E5EE6A00BE56AC /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
 		C92833A821E5EE9300BE56AC /* Dog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dog.swift; sourceTree = "<group>"; };
 		C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationTokenProtocol.swift; sourceTree = "<group>"; };
-		C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionChangeObservableTests.swift; sourceTree = "<group>"; };
+		C92833AC21E5F8A300BE56AC /* ObservableCollectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableCollectionTests.swift; sourceTree = "<group>"; };
 		C92833AE21E5FFC200BE56AC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		C92833B021E6007300BE56AC /* RealmObjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectError.swift; sourceTree = "<group>"; };
-		C92833B221E6024E00BE56AC /* TestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestModel.swift; sourceTree = "<group>"; };
-		C92833B621E602B400BE56AC /* ObjectObservableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservableTests.swift; sourceTree = "<group>"; };
+		C92833B221E6024E00BE56AC /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		C92833B621E602B400BE56AC /* ObservableObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObjectTests.swift; sourceTree = "<group>"; };
 		C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SignalProducer+Extension.swift"; sourceTree = "<group>"; };
 		C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalProducerTests.swift; sourceTree = "<group>"; };
 		C98A73C52201916A00A1E8A1 /* ListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTests.swift; sourceTree = "<group>"; };
 		C98A73C722027BE100A1E8A1 /* ObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectTests.swift; sourceTree = "<group>"; };
 		C9B447C1222F7A720027080F /* MockObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockObservableObject.swift; sourceTree = "<group>"; };
 		C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockObservableCollection.swift; sourceTree = "<group>"; };
+		F489FD95222FF3EC0018E679 /* MockToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockToken.swift; sourceTree = "<group>"; };
+		F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RealmCollectionChange+Extension.swift"; sourceTree = "<group>"; };
+		F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkingObjectsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,13 +161,14 @@
 				C92833A521E5EE1B00BE56AC /* Model */,
 				C928339D21E5ECF200BE56AC /* Extension */,
 				C9B447C0222F7A190027080F /* Mock */,
-				C92833AC21E5F8A300BE56AC /* CollectionChangeObservableTests.swift */,
-				C92833B621E602B400BE56AC /* ObjectObservableTests.swift */,
-				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
-				C928337F21E5D4E200BE56AC /* Info.plist */,
-				C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */,
-				C98A73C52201916A00A1E8A1 /* ListTests.swift */,
 				C98A73C722027BE100A1E8A1 /* ObjectTests.swift */,
+				C92833AC21E5F8A300BE56AC /* ObservableCollectionTests.swift */,
+				C92833B621E602B400BE56AC /* ObservableObjectTests.swift */,
+				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
+				C98A73C52201916A00A1E8A1 /* ListTests.swift */,
+				F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */,
+				C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */,
+				C928337F21E5D4E200BE56AC /* Info.plist */,
 			);
 			path = ReactiveRealmTests;
 			sourceTree = "<group>";
@@ -181,6 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */,
+				F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -190,7 +198,7 @@
 			children = (
 				C92833A621E5EE6A00BE56AC /* Person.swift */,
 				C92833A821E5EE9300BE56AC /* Dog.swift */,
-				C92833B221E6024E00BE56AC /* TestModel.swift */,
+				C92833B221E6024E00BE56AC /* Error.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -208,6 +216,7 @@
 			children = (
 				C9B447C1222F7A720027080F /* MockObservableObject.swift */,
 				C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */,
+				F489FD95222FF3EC0018E679 /* MockToken.swift */,
 			);
 			path = Mock;
 			sourceTree = "<group>";
@@ -334,17 +343,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C92833AD21E5F8A300BE56AC /* CollectionChangeObservableTests.swift in Sources */,
+				C92833AD21E5F8A300BE56AC /* ObservableCollectionTests.swift in Sources */,
+				F489FD98222FF5850018E679 /* RealmCollectionChange+Extension.swift in Sources */,
 				C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */,
 				C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */,
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
-				C92833B321E6024E00BE56AC /* TestModel.swift in Sources */,
+				F489FD9A222FFC8F0018E679 /* LinkingObjectsTests.swift in Sources */,
+				C92833B321E6024E00BE56AC /* Error.swift in Sources */,
 				C92833A721E5EE6A00BE56AC /* Person.swift in Sources */,
 				C98A73C822027BE100A1E8A1 /* ObjectTests.swift in Sources */,
+				F489FD96222FF3EC0018E679 /* MockToken.swift in Sources */,
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
 				C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */,
 				C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */,
-				C92833B721E602B400BE56AC /* ObjectObservableTests.swift in Sources */,
+				C92833B721E602B400BE56AC /* ObservableObjectTests.swift in Sources */,
 				C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -12,22 +12,6 @@ import RealmSwift
 import ReactiveSwift
 @testable import ReactiveRealm
 
-extension RealmCollectionChange: Equatable where CollectionType: Equatable {
-    
-    public static func == (lhs: RealmCollectionChange<CollectionType>, rhs: RealmCollectionChange<CollectionType>) -> Bool {
-        switch (lhs, rhs) {
-        case (.initial(let left), .initial(let right)):
-            return left == right
-        case (.update(let left), .update(let right)):
-            return left == right
-        case (.error(let left), .error(let right)):
-            return left == right
-        default:
-            return false
-        }
-    }
-}
-
 final class CollectionChangeObservableTests: XCTestCase {
     
     func testProducerSendInitialValueSynchronously() {
@@ -63,7 +47,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         XCTAssertEqual(updatedcollection?.id, collection.id)
     }
     
-    func testChangesSendError() {
+    func testProducerSendError() {
         let collection = MockObservableCollection()
         let changes = collection.reactive.producer
         
@@ -81,7 +65,28 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(error?.error as NSError?, .test)
+        XCTAssertEqual(error?.error as NSError?, .dummy)
+    }
+    
+    func testPropertyChangeWhenUpdated() {
+        let collection = MockObservableCollection()
+        let property = collection.reactive.property
+        
+        let exp = expectation(description: #function)
+        
+        var updated = false
+        property
+            .signal
+            .observeValues { _ in
+                updated = true
+                exp.fulfill()
+            }
+        
+        collection.sendUpdate()
+        
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssertEqual(updated, true)
     }
     
     func testPropertyIgnoreError() {

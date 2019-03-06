@@ -28,35 +28,35 @@ final class ResultsTests: XCTestCase {
     }
 }
 
-// MARK: - Changes
+// MARK: - Producer
 
 extension ResultsTests {
     
-    func testChangesSendInitialValueSynchronously() {
+    func testProducerSendInitialValueSynchronously() {
         let person = Person()
         
         let realm = Realm.inMemory()
         realm.forceAdd(person)
         
-        let changes = realm.objects(Person.self).reactive.producer
+        let producer = realm.objects(Person.self).reactive.producer
         var initialValue: Results<Person>?
         
-        changes.startWithResult { result in
+        producer.startWithResult { result in
             initialValue = result.value
         }
         
         XCTAssert(initialValue!.first!.isSameObject(as: person))
     }
     
-    func testChangesSendValueWhenUpdated() {
+    func testProducerSendValueWhenUpdated() {
         let person = Person()
         let realm = Realm.inMemory()
-        let changes = realm.objects(Person.self).reactive.producer
+        let producer = realm.objects(Person.self).reactive.producer
         
         let exp = expectation(description: #function)
         
         var results: Results<Person>?
-        changes
+        producer
             .skip(first: 1) // ignore initial value
             .startWithResult { result in
                 results = result.value
@@ -92,12 +92,12 @@ extension ResultsTests {
         
         let exp = expectation(description: #function)
         
-        var results: Results<Person>?
+        var results: Results<Person>!
         property
             .producer
             .skip(first: 1) // ignore initial value
-            .startWithResult { result in
-                results = result.value
+            .startWithValues {
+                results = $0
                 exp.fulfill()
             }
         
@@ -105,22 +105,28 @@ extension ResultsTests {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssert(results!.first!.isSameObject(as: person))
+        XCTAssert(results.first!.isSameObject(as: person))
     }
     
-    func testFirst() {
+    func testFirstInitialValue() {
         let defaultPerson = Person()
         let realm = Realm.inMemory()
         
         let first = realm.objects(Person.self).reactive.first(or: defaultPerson)
         
         XCTAssert(first.value.isSameObject(as: defaultPerson))
+    }
+    
+    func testFirstChangedWhenUpdated() {
+        let realm = Realm.inMemory()
+        
+        let first = realm.objects(Person.self).reactive.first()
         
         let exp = expectation(description: #function)
         
         let newPerson = Person()
         
-        var updated: Person?
+        var updated: Person!
         first.signal.observeValues {
             updated = $0
             exp.fulfill()
@@ -130,6 +136,6 @@ extension ResultsTests {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssert(updated?.isSameObject(as: newPerson) ?? false)
+        XCTAssert(updated.isSameObject(as: newPerson))
     }
 }

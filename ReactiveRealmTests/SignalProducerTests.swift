@@ -13,8 +13,7 @@ import ReactiveSwift
 final class SignalProducerTests: XCTestCase {
 
     func testIgnoreError() {
-        
-        let events: [Signal<Int, NSError>.Event] = [.value(0), .failed(.test), .value(100)]
+        let events: [Signal<Int, NSError>.Event] = [.value(0), .failed(.dummy), .value(100)]
         let producer = SignalProducer(events).flatMap(.latest) { SignalProducer(value: $0).dematerialize().ignoreError() }
         
         let value = producer.collect().first()?.value
@@ -22,7 +21,7 @@ final class SignalProducerTests: XCTestCase {
     }
     
     func testMapError() {
-        let value = SignalProducer<Int, NSError>(error: .test).mapError(to: 100).first()!.value!
+        let value = SignalProducer<Int, NSError>(error: .dummy).mapError(to: 100).first()!.value!
         XCTAssertEqual(value, 100)
     }
 }

@@ -39,7 +39,7 @@ final class MockObservableCollection: ObeservableCollection, Equatable {
     }
     
     func sendError() {
-        block?(.error(AnyError(NSError.test)))
+        block?(.error(AnyError(NSError.dummy)))
     }
     
     static func == (lhs: MockObservableCollection, rhs: MockObservableCollection) -> Bool {

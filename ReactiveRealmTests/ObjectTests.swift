@@ -14,19 +14,19 @@ import RealmSwift
 
 final class ObjectTests: XCTestCase {
 
-    func testObjectChange() {
+    func testPropertyChangesSendValue() {
         let realm = Realm.inMemory()
         
         let person = Person()
         
         realm.forceAdd(person)
         
-        let objectChange = person.reactive.propertyChanges
+        let propertyChanges = person.reactive.propertyChanges
         
         let exp = expectation(description: #function)
         
-        var results: [Signal<[PropertyChange], RealmObjectError>.Event]!
-        objectChange.materialize().collect().startWithValues {
+        var results: [PropertyChange] = []
+        propertyChanges.ignoreError().startWithValues {
             results = $0
             exp.fulfill()
         }
@@ -35,21 +35,36 @@ final class ObjectTests: XCTestCase {
             person.name = "test"
         }
         
-        realm.forceWrite {
-            realm.delete(person)
+        waitForExpectations(timeout: 1, handler: nil)
+        
+        XCTAssertEqual(results.count, 1)
+        
+        XCTAssertEqual(results[0].name, "name")
+        XCTAssertEqual(results[0].newValue as? String, "test")
+    }
+    
+    func testPropertyChangesSendError() {
+        let realm = Realm.inMemory()
+        
+        let person = Person()
+        
+        realm.forceAdd(person)
+        
+        let propertyChanges = person.reactive.propertyChanges
+        
+        let exp = expectation(description: #function)
+        
+        var error: RealmObjectError!
+        propertyChanges.startWithFailed {
+            error = $0
+            exp.fulfill()
         }
+        
+        realm.forceDelete(person)
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(results?.count, 2)
-        
-        let propertyChanges = results[0].value!
-        XCTAssertEqual(propertyChanges[0].name, "name")
-        XCTAssertEqual(propertyChanges[0].newValue as? String, "test")
-        
-        let error = results[1].error!
-        
-        switch error {
+        switch error! {
         case .deleted:
             break
         default:
@@ -57,14 +72,26 @@ final class ObjectTests: XCTestCase {
         }
     }
     
-    func testProperty() {
+    func testPropertyInitialValue() {
+        let realm = Realm.inMemory()
+        
+        let name = "hoge"
+        
+        let person = Person()
+        person.name = name
+        
+        realm.forceAdd(person)
+        
+        let property = person.reactive.property
+        XCTAssert(property.value.isSameObject(as: person))
+        XCTAssertEqual(property.value.name, name)
+    }
+    
+    func testPropertySendValueWhenUpdated() {
         let realm = Realm.inMemory()
         
         let person = Person()
-        
-        realm.forceWrite {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let property = person.reactive.property
         
@@ -92,10 +119,7 @@ final class ObjectTests: XCTestCase {
         let realm = Realm.inMemory()
         
         let person = Person()
-        
-        realm.forceWrite {
-            realm.add(person)
-        }
+        realm.forceAdd(person)
         
         let isInvalidated = person.reactive.isInvalidated
         
@@ -109,9 +133,7 @@ final class ObjectTests: XCTestCase {
             exp.fulfill()
         }
         
-        realm.forceWrite {
-            realm.delete(person)
-        }
+        realm.forceDelete(person)
         
         waitForExpectations(timeout: 1, handler: nil)
         

@@ -59,7 +59,7 @@ public extension Reactive where Base: ObservableObject {
             return Property(value: isInvalidated)
         }
         
-        let isDeleted = producer.map(value: false).mapError(to: true)
+        let isDeleted = producer.map(value: false).mapError(to: true).filter { $0 }
         return Property(
             initial: isInvalidated,
             then: isDeleted

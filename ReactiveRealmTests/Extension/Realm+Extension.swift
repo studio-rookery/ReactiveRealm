@@ -11,7 +11,7 @@ import RealmSwift
 
 extension Realm {
     
-    static func inMemory(identifier: String = #function) -> Realm {
+    static func inMemory(identifier: String = "\(#function) - \(UUID().uuidString)") -> Realm {
         var configuration = Realm.Configuration.defaultConfiguration
         configuration.inMemoryIdentifier = identifier
         return try! Realm(configuration: configuration)
@@ -24,6 +24,12 @@ extension Realm {
     func forceAdd(_ object: Object) {
         forceWrite {
             add(object)
+        }
+    }
+    
+    func forceAdd(_ objects: [Object]) {
+        forceWrite {
+            add(objects)
         }
     }
     

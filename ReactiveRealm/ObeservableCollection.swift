@@ -26,11 +26,11 @@ extension List: ObeservableCollection {
     
 }
 
-extension AnyRealmCollection: ObeservableCollection {
+extension LinkingObjects: ObeservableCollection {
     
 }
 
-extension LinkingObjects: ObeservableCollection {
+extension AnyRealmCollection: ObeservableCollection {
     
 }
 

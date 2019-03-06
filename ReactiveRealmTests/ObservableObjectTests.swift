@@ -79,7 +79,7 @@ final class ObjectObservableTests: XCTestCase {
         
         switch error {
         case .unknown(let error as NSError)?:
-            XCTAssertEqual(error, .test)
+            XCTAssertEqual(error, .dummy)
         default:
             XCTFail()
         }

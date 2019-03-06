@@ -35,7 +35,7 @@ final class MockObservableObject: ObservableObject, ReactiveExtensionsProvider {
     }
     
     func sendError() {
-        block?(.error(.test))
+        block?(.error(.dummy))
     }
     
     func delete() {
