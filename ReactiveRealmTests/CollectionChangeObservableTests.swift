@@ -30,25 +30,6 @@ extension RealmCollectionChange: Equatable where CollectionType: Equatable {
 
 final class CollectionChangeObservableTests: XCTestCase {
     
-    func testChangeset() {
-        let stub = MockObservableCollection()
-        let changest = stub.reactive.changeset
-        
-        var events: [Signal<RealmCollectionChange<MockObservableCollection>, NoError>.Event] = []
-        changest.start {
-            events.append($0)
-        }
-        
-        stub.sendUpdate()
-        stub.sendError()
-        
-        XCTAssertEqual(events, [
-            .value(.initial(stub)),
-            .value(.update(stub, deletions: [], insertions: [], modifications: [])),
-            .value(.error(AnyError(NSError.test)))
-        ])
-    }
-    
     func testChangesSendInitialValueSynchronously() {
         let stub = MockObservableCollection()
         let changes = stub.reactive.producer
