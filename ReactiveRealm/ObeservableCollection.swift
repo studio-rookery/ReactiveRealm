@@ -40,7 +40,7 @@ extension AnyRealmCollection: ObeservableCollection {
 public extension Reactive where Base: ObeservableCollection {
     
     /// A producer that sends a value each time the collection is updated.
-    /// The initial value is sent on `start`.
+    /// The initial value is sent immediately.
     /// When the realm of the collection notifies an error, the producer sends the error.
     var producer: SignalProducer<Base, AnyError> {
         return SignalProducer<Base, AnyError> { observer, lifetime in
@@ -73,11 +73,11 @@ public extension Reactive where Base: ObeservableCollection {
 
 public extension Reactive where Base: ObeservableCollection & Collection, Base.Element: Object {
     
-    /// Returns a property that reflects the first element.
+    /// Returns a property representing the first element of the collection.
     /// If the first element is nil, `default` is adopted for its value.
     ///
     /// - Parameter default: the value adopted when the first element is nil.
-    /// - Returns: A property that reflects the first element or the specified object.
+    /// - Returns: A property that represents the first element or the specified object.
     func first(or default: @autoclosure @escaping () -> Base.Element = Base.Element()) -> ReactiveSwift.Property<Base.Element> {
         return property.map { $0.first ?? `default`() }
     }
