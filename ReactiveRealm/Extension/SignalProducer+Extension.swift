@@ -7,16 +7,15 @@
 //
 
 import Foundation
-import Result
 import ReactiveSwift
 
 extension SignalProducer {
     
-    func ignoreError() -> SignalProducer<Value, NoError> {
+    func ignoreError() -> SignalProducer<Value, Never> {
         return flatMapError { _ in .empty }
     }
     
-    func mapError(to value: Value) -> SignalProducer<Value, NoError> {
-        return flatMapError { _ in SignalProducer<Value, NoError>(value: value) }
+    func mapError(to value: Value) -> SignalProducer<Value, Never> {
+        return flatMapError { _ in SignalProducer<Value, Never>(value: value) }
     }
 }

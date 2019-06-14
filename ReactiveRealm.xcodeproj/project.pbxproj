@@ -11,7 +11,6 @@
 		C928338021E5D4E200BE56AC /* ReactiveRealm.h in Headers */ = {isa = PBXBuildFile; fileRef = C928337221E5D4E200BE56AC /* ReactiveRealm.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C928338F21E5E96500BE56AC /* ReactiveSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338B21E5E96500BE56AC /* ReactiveSwift.framework */; };
 		C928339021E5E96500BE56AC /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; };
-		C928339121E5E96500BE56AC /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338D21E5E96500BE56AC /* Result.framework */; };
 		C928339221E5E96500BE56AC /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C928338E21E5E96500BE56AC /* Realm.framework */; };
 		C928339621E5EA7D00BE56AC /* ObeservableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339521E5EA7D00BE56AC /* ObeservableCollection.swift */; };
 		C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339721E5ECB700BE56AC /* ResultsTests.swift */; };
@@ -19,7 +18,6 @@
 		C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338B21E5E96500BE56AC /* ReactiveSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338E21E5E96500BE56AC /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C92833A421E5EDBA00BE56AC /* Result.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338D21E5E96500BE56AC /* Result.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C92833A721E5EE6A00BE56AC /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A621E5EE6A00BE56AC /* Person.swift */; };
 		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 		C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */; };
@@ -59,7 +57,6 @@
 				C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */,
 				C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */,
 				C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */,
-				C92833A421E5EDBA00BE56AC /* Result.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +102,6 @@
 			files = (
 				C928338F21E5E96500BE56AC /* ReactiveSwift.framework in Frameworks */,
 				C928339021E5E96500BE56AC /* RealmSwift.framework in Frameworks */,
-				C928339121E5E96500BE56AC /* Result.framework in Frameworks */,
 				C928339221E5E96500BE56AC /* Realm.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

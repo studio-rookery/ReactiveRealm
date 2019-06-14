@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Result
 import RealmSwift
 
 @testable import ReactiveRealm
@@ -39,7 +38,7 @@ final class MockObservableCollection: ObeservableCollection, Equatable {
     }
     
     func sendError() {
-        block?(.error(AnyError(NSError.dummy)))
+        block?(.error(NSError.dummy))
     }
     
     static func == (lhs: MockObservableCollection, rhs: MockObservableCollection) -> Bool {

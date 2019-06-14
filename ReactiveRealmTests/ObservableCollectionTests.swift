@@ -7,7 +7,6 @@
 //
 
 import XCTest
-import Result
 import RealmSwift
 import ReactiveSwift
 @testable import ReactiveRealm
@@ -53,7 +52,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         let exp = expectation(description: #function)
         
-        var error: AnyError?
+        var error: Error?
         changes
             .skip(first: 1) // ignore initial value
             .startWithResult { result in
@@ -65,7 +64,7 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         waitForExpectations(timeout: 1, handler: nil)
         
-        XCTAssertEqual(error?.error as NSError?, .dummy)
+        XCTAssertEqual(error as NSError?, .dummy)
     }
     
     func testPropertyChangeWhenUpdated() {

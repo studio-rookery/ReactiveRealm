@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Result
 import ReactiveSwift
 import RealmSwift
 
@@ -42,8 +41,8 @@ public extension Reactive where Base: ObeservableCollection {
     /// A producer that sends a value each time the collection is updated.
     /// The initial value is sent immediately.
     /// When the realm of the collection notifies an error, the producer sends the error.
-    var producer: SignalProducer<Base, AnyError> {
-        return SignalProducer<Base, AnyError> { observer, lifetime in
+    var producer: SignalProducer<Base, Error> {
+        return SignalProducer<Base, Error> { observer, lifetime in
             
             observer.send(value: self.base)
             
@@ -54,7 +53,7 @@ public extension Reactive where Base: ObeservableCollection {
                 case .update(let collection, _, _, _):
                     observer.send(value: collection)
                 case .error(let error):
-                    observer.send(error: AnyError(error))
+                    observer.send(error: error)
                 }
             }
             

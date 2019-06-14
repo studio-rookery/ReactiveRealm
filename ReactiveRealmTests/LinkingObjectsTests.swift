@@ -8,7 +8,6 @@
 
 import XCTest
 import Foundation
-import Result
 import ReactiveSwift
 import RealmSwift
 @testable import ReactiveRealm
