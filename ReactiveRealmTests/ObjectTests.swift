@@ -43,7 +43,7 @@ final class ObjectTests: XCTestCase {
         
         var results: [PropertyChange] = []
         propertyChanges.ignoreError().startWithValues {
-            results = $0
+            results = $0.1
             exp.fulfill()
         }
         

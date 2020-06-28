@@ -23,7 +23,7 @@ final class MockObservableCollection: ObeservableCollection, Equatable {
     
     private var block: ((RealmCollectionChange<MockObservableCollection>) -> ())?
     
-    func observe(_ block: @escaping (RealmCollectionChange<MockObservableCollection>) -> ()) -> MockToken {
+    func observe(on queue: DispatchQueue? = nil, _ block: @escaping (RealmCollectionChange<MockObservableCollection>) -> ()) -> MockToken {
         self.block = block
         sendInitial()
         return token

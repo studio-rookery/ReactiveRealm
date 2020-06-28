@@ -12,7 +12,7 @@ import ReactiveSwift
 
 @testable import ReactiveRealm
 
-final class MockObservableObject: ObservableObject, ReactiveExtensionsProvider {
+final class MockObservableObject: ReactiveRealm.ObservableObject, ReactiveExtensionsProvider {
     
     typealias NotificationTokenType = MockToken
     
@@ -22,15 +22,16 @@ final class MockObservableObject: ObservableObject, ReactiveExtensionsProvider {
     
     private(set) var isInvalidated = false
     
-    private var block: ((ObjectChange) -> ())?
+    private var block: ((ObjectChange<Object>) -> ())?
     
-    func observe(_ block: @escaping (ObjectChange) -> ()) -> MockToken {
-        self.block = block
+    func observe<T>(on queue: DispatchQueue? = nil, _ block: @escaping (ObjectChange<T>) -> ()) -> MockToken where T : Object {
+//        self.block = block as (ObjectChange<Object>) -> ()
         return token
     }
     
+    
     func sendChange() {
-        block?(.change([]))
+//        block?(Object(), .change([]))
     }
     
     func sendError() {

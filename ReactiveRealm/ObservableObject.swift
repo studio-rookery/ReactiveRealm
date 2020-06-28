@@ -17,7 +17,7 @@ public protocol ObservableObject {
     
     var isInvalidated: Bool { get }
     
-    func observe(_ block: @escaping (ObjectChange) -> ()) -> NotificationTokenType
+    func observe<T: Object>(on queue: DispatchQueue?, _ block: @escaping (ObjectChange<T>) -> ()) -> NotificationTokenType
 }
 
 extension Object: ObservableObject, ReactiveExtensionsProvider {
@@ -30,12 +30,12 @@ public extension Reactive where Base: ObservableObject {
     
     /// A producer that sends property changes each time the object's properties are updated.
     /// When the realm notifies an error or the object is deleted, it ends with the error.
-    var propertyChanges: SignalProducer<[PropertyChange], RealmObjectError> {
-        return SignalProducer<[PropertyChange], RealmObjectError> { observer, lifetime in
-            let token = self.base.observe { change in
+    var propertyChanges: SignalProducer<(Base, [PropertyChange]), RealmObjectError> {
+        return SignalProducer<(Base, [PropertyChange]), RealmObjectError> { observer, lifetime in
+            let token = self.base.observe(on: nil) { change in
                 switch change {
-                case .change(let propertyChanges):
-                    observer.send(value: propertyChanges)
+                case .change(let object, let changes):
+                    observer.send(value: (object as! Base, changes))
                 case .deleted:
                     observer.send(error: .deleted)
                 case .error(let error):
@@ -52,7 +52,7 @@ public extension Reactive where Base: ObservableObject {
     /// A producer that sends a value each time the object's properties are updated.
     /// When the realm notifies an error or the object is deleted, it ends with the error.
     var producer: SignalProducer<Base, RealmObjectError> {
-        return propertyChanges.map(value: base)
+        return propertyChanges.map(\.0)
     }
     
     /// A property that sends its changes when the object is updated.
