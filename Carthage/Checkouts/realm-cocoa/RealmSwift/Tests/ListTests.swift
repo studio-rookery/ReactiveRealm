@@ -75,7 +75,6 @@ class ListTests: TestCase {
         super.tearDown()
     }
 
-#if swift(>=4)
     override class var defaultTestSuite: XCTestSuite {
         // Don't run tests for the base class
         if isEqual(ListTests.self) {
@@ -83,15 +82,6 @@ class ListTests: TestCase {
         }
         return super.defaultTestSuite
     }
-#else
-    override class func defaultTestSuite() -> XCTestSuite {
-        // Don't run tests for the base class
-        if isEqual(ListTests.self) {
-            return XCTestSuite(name: "empty")
-        }
-        return super.defaultTestSuite()
-    }
-#endif
 
     func testPrimitive() {
         let obj = SwiftListObject()
@@ -569,11 +559,7 @@ class ListTests: TestCase {
                 let objects = realm.objects(SwiftOptionalObject.self)
 
                 let properties = Array(objects.compactMap { $0.optInt8Col.value })
-#if swift(>=3.1)
                 let listsOfObjects = objects.value(forKeyPath: "optInt8Col") as! [Int8]
-#else
-                let listsOfObjects = (objects.value(forKeyPath: "optInt8Col") as! [NSNumber]).map { $0.int8Value }
-#endif
                 let kvcProperties = Array(listsOfObjects.compactMap { $0 })
 
                 XCTAssertEqual(properties, kvcProperties)
@@ -587,9 +573,6 @@ class ListTests: TestCase {
 
                 XCTAssertEqual(properties, kvcProperties)
             }
-#if swift(>=4)
-            // this test crashes xcode 9 beta 1's compiler
-#else
             do {
                 let objects = realm.objects(SwiftOptionalObject.self)
 
@@ -599,12 +582,11 @@ class ListTests: TestCase {
 
                 XCTAssertEqual(properties, kvcProperties)
             }
-#endif
             do {
                 let objects = realm.objects(SwiftOptionalObject.self)
 
                 let properties = Array(objects.compactMap { $0.optNSStringCol })
-                let listsOfObjects = objects.value(forKeyPath: "optNSStringCol") as! [NSString]
+                let listsOfObjects = objects.value(forKeyPath: "optNSStringCol") as! [NSString?]
                 let kvcProperties = Array(listsOfObjects.compactMap { $0 })
 
                 XCTAssertEqual(properties, kvcProperties)
@@ -695,7 +677,7 @@ class ListRetrievedTests: ListTests {
 }
 
 /// Ensure the range replaceable collection methods behave correctly when emulated for Swift 4 and later.
-class ListRRCMethodsTests: XCTestCase {
+class ListRRCMethodsTests: TestCase {
     private func compare(array: [Int], with list: List<SwiftIntObject>) {
         guard array.count == list.count else {
             XCTFail("Array and list have different sizes (\(array.count) and \(list.count), respectively).")
@@ -731,9 +713,10 @@ class ListRRCMethodsTests: XCTestCase {
         array = makeArray(from: list)
     }
 
-#if swift(>=4.0)
     func testSubscript() {
+        list[0] = SwiftIntObject(value: [5])
         list[1..<4] = createListObject([10, 11, 12]).intArray[0..<2]
+        array[0] = 5
         array[1..<4] = [10, 11]
         compare(array: array, with: list)
     }
@@ -749,7 +732,6 @@ class ListRRCMethodsTests: XCTestCase {
         list.removeSubrange(list.indices)
         XCTAssertTrue(list.isEmpty)
     }
-#endif
 
     func testRemoveFirst() {
         list.removeFirst()
@@ -761,6 +743,11 @@ class ListRRCMethodsTests: XCTestCase {
         list.removeFirst(3)
         array.removeFirst(3)
         compare(array: array, with: list)
+    }
+
+    func testRemoveFirstInvalid() {
+        assertThrows(list.removeFirst(-1))
+        assertThrows(list.removeFirst(100))
     }
 
     func testRemoveLastFew() {

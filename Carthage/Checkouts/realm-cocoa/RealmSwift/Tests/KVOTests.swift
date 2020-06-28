@@ -25,7 +25,7 @@ func nextPrimaryKey() -> Int {
     return pkCounter
 }
 
-class KVOObject: Object {
+class SwiftKVOObject: Object {
     @objc dynamic var pk = nextPrimaryKey() // primary key for equality
     @objc dynamic var ignored: Int = 0
 
@@ -39,8 +39,8 @@ class KVOObject: Object {
     @objc dynamic var stringCol: String = ""
     @objc dynamic var binaryCol: Data = Data()
     @objc dynamic var dateCol: Date = Date(timeIntervalSince1970: 0)
-    @objc dynamic var objectCol: KVOObject?
-    let arrayCol = List<KVOObject>()
+    @objc dynamic var objectCol: SwiftKVOObject?
+    let arrayCol = List<SwiftKVOObject>()
     let optIntCol = RealmOptional<Int>()
     let optFloatCol = RealmOptional<Float>()
     let optDoubleCol = RealmOptional<Double>()
@@ -100,7 +100,7 @@ class KVOTests: TestCase {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    func observeChange<T: Equatable>(_ obj: KVOObject, _ key: String, _ old: T?, _ new: T?,
+    func observeChange<T: Equatable>(_ obj: SwiftKVOObject, _ key: String, _ old: T?, _ new: T?,
                                      fileName: StaticString = #file, lineNumber: UInt = #line, _ block: () -> Void) {
         let kvoOptions: NSKeyValueObservingOptions = [.old, .new]
         obj.addObserver(self, forKeyPath: key, options: kvoOptions, context: nil)
@@ -123,21 +123,36 @@ class KVOTests: TestCase {
         changeDictionary = nil
     }
 
-#if swift(>=3.2)
-    func observeChange<T: Equatable>(_ obj: KVOObject, _ keyPath: KeyPath<KVOObject, T>, _ old: Any?, _ new: Any?,
+    func observeChange<T: Equatable>(_ obj: SwiftKVOObject, _ keyPath: KeyPath<SwiftKVOObject, T>, _ old: T, _ new: T,
                                      fileName: StaticString = #file, lineNumber: UInt = #line, _ block: () -> Void) {
         let kvoOptions: NSKeyValueObservingOptions = [.old, .new]
         var gotNotification = false
         let observation = obj.observe(keyPath, options: kvoOptions) { _, change in
-            if let old = old {
-                XCTAssertEqual(change.oldValue, (old as! T), file: fileName, line: lineNumber)
+            XCTAssertEqual(change.oldValue, old, file: fileName, line: lineNumber)
+            XCTAssertEqual(change.newValue, new, file: fileName, line: lineNumber)
+            gotNotification = true
+        }
+
+        block()
+        observation.invalidate()
+
+        XCTAssertTrue(gotNotification, file: fileName, line: lineNumber)
+    }
+
+    func observeChange<T: Equatable>(_ obj: SwiftKVOObject, _ keyPath: KeyPath<SwiftKVOObject, T?>, _ old: T?, _ new: T?,
+                                     fileName: StaticString = #file, lineNumber: UInt = #line, _ block: () -> Void) {
+        let kvoOptions: NSKeyValueObservingOptions = [.old, .new]
+        var gotNotification = false
+        let observation = obj.observe(keyPath, options: kvoOptions) { _, change in
+            if let oldValue = change.oldValue {
+                XCTAssertEqual(oldValue, old, file: fileName, line: lineNumber)
             } else {
-                XCTAssertNil(change.oldValue, file: fileName, line: lineNumber)
+                XCTAssertNil(old, file: fileName, line: lineNumber)
             }
-            if let new = new {
-                XCTAssertEqual(change.newValue, (new as! T), file: fileName, line: lineNumber)
+            if let newValue = change.newValue {
+                XCTAssertEqual(newValue, new, file: fileName, line: lineNumber)
             } else {
-                XCTAssertNil(change.newValue, file: fileName, line: lineNumber)
+                XCTAssertNil(new, file: fileName, line: lineNumber)
             }
             gotNotification = true
         }
@@ -147,7 +162,6 @@ class KVOTests: TestCase {
 
         XCTAssertTrue(gotNotification, file: fileName, line: lineNumber)
     }
-#endif
 
     func observeListChange(_ obj: NSObject, _ key: String, _ kind: NSKeyValueChange, _ indexes: NSIndexSet = NSIndexSet(index: 0),
                            fileName: StaticString = #file, lineNumber: UInt = #line, _ block: () -> Void) {
@@ -167,27 +181,20 @@ class KVOTests: TestCase {
         changeDictionary = nil
     }
 
-    func getObject(_ obj: KVOObject) -> (KVOObject, KVOObject) {
+    func getObject(_ obj: SwiftKVOObject) -> (SwiftKVOObject, SwiftKVOObject) {
         return (obj, obj)
     }
 
     // Actual tests follow
 
     func testAllPropertyTypes() {
-        let (obj, obs) = getObject(KVOObject())
+        let (obj, obs) = getObject(SwiftKVOObject())
 
         observeChange(obs, "boolCol", false, true) { obj.boolCol = true }
-#if swift(>=3.2)
         observeChange(obs, "int8Col", 1 as Int8, 10) { obj.int8Col = 10 }
         observeChange(obs, "int16Col", 2 as Int16, 10) { obj.int16Col = 10 }
         observeChange(obs, "int32Col", 3 as Int32, 10) { obj.int32Col = 10 }
         observeChange(obs, "int64Col", 4 as Int64, 10) { obj.int64Col = 10 }
-#else
-        observeChange(obs, "int8Col", 1, 10) { obj.int8Col = 10 }
-        observeChange(obs, "int16Col", 2, 10) { obj.int16Col = 10 }
-        observeChange(obs, "int32Col", 3, 10) { obj.int32Col = 10 }
-        observeChange(obs, "int64Col", 4, 10) { obj.int64Col = 10 }
-#endif
         observeChange(obs, "floatCol", 5 as Float, 10) { obj.floatCol = 10 }
         observeChange(obs, "doubleCol", 6 as Double, 10) { obj.doubleCol = 10 }
         observeChange(obs, "stringCol", "", "abc") { obj.stringCol = "abc" }
@@ -257,15 +264,37 @@ class KVOTests: TestCase {
             self.realm.delete(obj)
         }
 
-        let (obj2, obs2) = getObject(KVOObject())
+        let (obj2, obs2) = getObject(SwiftKVOObject())
         observeChange(obs2, "arrayCol.invalidated", false, true) {
             self.realm.delete(obj2)
         }
     }
 
-#if swift(>=3.2)
     func testTypedObservation() {
-        let (obj, obs) = getObject(KVOObject())
+        let (obj, obs) = getObject(SwiftKVOObject())
+
+        // Swift 5.2+ warns when a literal keypath to a non-@objc property is
+        // passed to observe(). This only works when it's passed directly and
+        // not via a helper, so make sure we aren't triggering this warning on
+        // any property types.
+        _ = obs.observe(\.boolCol) { _, _ in }
+        _ = obs.observe(\.int8Col) { _, _ in }
+        _ = obs.observe(\.int16Col) { _, _ in }
+        _ = obs.observe(\.int32Col) { _, _ in }
+        _ = obs.observe(\.int64Col) { _, _ in }
+        _ = obs.observe(\.floatCol) { _, _ in }
+        _ = obs.observe(\.doubleCol) { _, _ in }
+        _ = obs.observe(\.stringCol) { _, _ in }
+        _ = obs.observe(\.binaryCol) { _, _ in }
+        _ = obs.observe(\.dateCol) { _, _ in }
+        _ = obs.observe(\.objectCol) { _, _ in }
+        _ = obs.observe(\.optStringCol) { _, _ in }
+        _ = obs.observe(\.optBinaryCol) { _, _ in }
+        _ = obs.observe(\.optDateCol) { _, _ in }
+        _ = obs.observe(\.optStringCol) { _, _ in }
+        _ = obs.observe(\.optBinaryCol) { _, _ in }
+        _ = obs.observe(\.optDateCol) { _, _ in }
+        _ = obs.observe(\.isInvalidated) { _, _ in }
 
         observeChange(obs, \.boolCol, false, true) { obj.boolCol = true }
 
@@ -283,7 +312,6 @@ class KVOTests: TestCase {
         let date = Date(timeIntervalSince1970: 1)
         observeChange(obs, \.dateCol, Date(timeIntervalSince1970: 0), date) { obj.dateCol = date }
 
-#if swift(>=3.4) && (swift(>=4.1.50) || !swift(>=4))
         observeChange(obs, \.objectCol, nil, obj) { obj.objectCol = obj }
 
         observeChange(obs, \.optStringCol, nil, "abc") { obj.optStringCol = "abc" }
@@ -293,7 +321,6 @@ class KVOTests: TestCase {
         observeChange(obs, \.optStringCol, "abc", nil) { obj.optStringCol = nil }
         observeChange(obs, \.optBinaryCol, data, nil) { obj.optBinaryCol = nil }
         observeChange(obs, \.optDateCol, date, nil) { obj.optDateCol = nil }
-#endif
 
         if obs.realm == nil {
             return
@@ -303,26 +330,25 @@ class KVOTests: TestCase {
             self.realm.delete(obj)
         }
     }
-#endif
 
     func testReadSharedSchemaFromObservedObject() {
-        let obj = KVOObject()
+        let obj = SwiftKVOObject()
         obj.addObserver(self, forKeyPath: "boolCol", options: [.old, .new], context: nil)
-        XCTAssertEqual(type(of: obj).sharedSchema(), KVOObject.sharedSchema())
+        XCTAssertEqual(type(of: obj).sharedSchema(), SwiftKVOObject.sharedSchema())
         obj.removeObserver(self, forKeyPath: "boolCol")
     }
 }
 
 class KVOPersistedTests: KVOTests {
-    override func getObject(_ obj: KVOObject) -> (KVOObject, KVOObject) {
+    override func getObject(_ obj: SwiftKVOObject) -> (SwiftKVOObject, SwiftKVOObject) {
         realm.add(obj)
         return (obj, obj)
     }
 }
 
 class KVOMultipleAccessorsTests: KVOTests {
-    override func getObject(_ obj: KVOObject) -> (KVOObject, KVOObject) {
+    override func getObject(_ obj: SwiftKVOObject) -> (SwiftKVOObject, SwiftKVOObject) {
         realm.add(obj)
-        return (obj, realm.object(ofType: KVOObject.self, forPrimaryKey: obj.pk)!)
+        return (obj, realm.object(ofType: SwiftKVOObject.self, forPrimaryKey: obj.pk)!)
     }
 }

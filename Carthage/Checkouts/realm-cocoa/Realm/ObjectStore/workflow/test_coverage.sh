@@ -11,16 +11,26 @@ if [ "$(uname)" = "Linux" ]; then
   nprocs=$(grep -c ^processor /proc/cpuinfo)
 fi
 
+: ${OPENSSL_ROOT_DIR:=/usr/local}
+
 set -e
 
+if [ "${TMPDIR}" = "" ]; then
+  TMPDIR="/tmp"
+fi
+
+echo "TMPDIR: ${TMPDIR}"
+find $TMPDIR -name 'realm*' -exec rm -rf "{}" \+ || true
 rm -rf coverage.build
 mkdir -p coverage.build
 cd coverage.build
 
-cmake_flags=""
+cmake_flags="-DCMAKE_CXX_FLAGS=-Werror"
 if [ "${sync}" = "sync" ]; then
-    cmake_flags="${cmake_flags} -DREALM_ENABLE_SYNC=1"
+    cmake_flags="${cmake_flags} -DREALM_ENABLE_SYNC=1 -DREALM_ENABLE_SERVER=1 -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}"
 fi
 
 cmake ${cmake_flags} -DCMAKE_BUILD_TYPE=Coverage -DDEPENDENCIES_FILE="dependencies${deps_suffix}.list" ..
 make VERBOSE=1 -j${nprocs} generate-coverage-cobertura
+
+find $TMPDIR -name 'realm*' -exec rm -rf "{}" \+ || true

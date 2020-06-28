@@ -145,7 +145,9 @@ class SignalSpec: QuickSpec {
 					lifetime += disposable
 				}
 
-				expect(disposable.isDisposed) == true
+				withExtendedLifetime(signal) {
+					expect(disposable.isDisposed) == true
+				}
 			}
 
 			it("should dispose of the returned disposable if the signal has completed in the generator") {
@@ -157,7 +159,9 @@ class SignalSpec: QuickSpec {
 					lifetime += disposable
 				}
 
-				expect(disposable.isDisposed) == true
+				withExtendedLifetime(signal) {
+					expect(disposable.isDisposed) == true
+				}
 			}
 
 			it("should dispose of the returned disposable if the signal has failed in the generator") {
@@ -169,7 +173,9 @@ class SignalSpec: QuickSpec {
 					lifetime += disposable
 				}
 
-				expect(disposable.isDisposed) == true
+				withExtendedLifetime(signal) {
+					expect(disposable.isDisposed) == true
+				}
 			}
 		}
 
@@ -230,10 +236,12 @@ class SignalSpec: QuickSpec {
 				let disposable = AnyDisposable()
 				let (signal, observer) = Signal<(), Never>.pipe(disposable: disposable)
 
-				expect(disposable.isDisposed) == false
+				withExtendedLifetime(signal) {
+					expect(disposable.isDisposed) == false
 
-				observer.sendCompleted()
-				expect(disposable.isDisposed) == true
+					observer.sendCompleted()
+					expect(disposable.isDisposed) == true
+				}
 			}
 
 			context("memory") {
@@ -262,7 +270,6 @@ class SignalSpec: QuickSpec {
 		describe("interruption") {
 			it("should not send events after sending an interrupted event") {
 				let queue: DispatchQueue
-				let counter = Atomic<Int>(0)
 
 				if #available(macOS 10.10, *) {
 					queue = DispatchQueue.global(qos: .userInitiated)
@@ -327,7 +334,6 @@ class SignalSpec: QuickSpec {
 					DispatchQueue.concurrentPerform(iterations: iterations) { _ in
 						let (signal, observer) = Signal<(), Never>.pipe()
 
-						var isInterrupted = false
 						signal.observeInterrupted { counter.modify { $0 += 1 } }
 
 						// Used to synchronize the `value` sender and the `interrupt`
@@ -678,10 +684,10 @@ class SignalSpec: QuickSpec {
 			}
 		}
 
-		describe("filterMap") {
+		describe("compactMap") {
 			it("should omit values from the signal that are nil after the transformation") {
 				let (signal, observer) = Signal<String, Never>.pipe()
-				let mappedSignal: Signal<Int, Never> = signal.filterMap { Int.init($0) }
+				let mappedSignal: Signal<Int, Never> = signal.compactMap(Int.init)
 
 				var lastValue: Int?
 
@@ -701,7 +707,7 @@ class SignalSpec: QuickSpec {
 
 			it("should stop emiting values after an error") {
 				let (signal, observer) = Signal<String, TestError>.pipe()
-				let mappedSignal: Signal<Int, TestError> = signal.filterMap { Int.init($0) }
+				let mappedSignal: Signal<Int, TestError> = signal.compactMap(Int.init)
 
 				var lastValue: Int?
 
@@ -724,7 +730,7 @@ class SignalSpec: QuickSpec {
 
 			it("should stop emiting values after a complete") {
 				let (signal, observer) = Signal<String, Never>.pipe()
-				let mappedSignal: Signal<Int, Never> = signal.filterMap { Int.init($0) }
+				let mappedSignal: Signal<Int, Never> = signal.compactMap(Int.init)
 
 				var lastValue: Int?
 
@@ -743,7 +749,7 @@ class SignalSpec: QuickSpec {
 
 			it("should send completed") {
 				let (signal, observer) = Signal<String, Never>.pipe()
-				let mappedSignal: Signal<Int, Never> = signal.filterMap { Int.init($0) }
+				let mappedSignal: Signal<Int, Never> = signal.compactMap(Int.init)
 
 				var completed: Bool = false
 
@@ -755,7 +761,7 @@ class SignalSpec: QuickSpec {
 
 			it("should send failure") {
 				let (signal, observer) = Signal<String, TestError>.pipe()
-				let mappedSignal: Signal<Int, TestError> = signal.filterMap { Int.init($0) }
+				let mappedSignal: Signal<Int, TestError> = signal.compactMap(Int.init)
 
 				var failure: TestError?
 
@@ -825,6 +831,55 @@ class SignalSpec: QuickSpec {
 
 				observer.send(value: "bb")
 				expect(lastValue) == "abb"
+			}
+		}
+
+		describe("scanMap(_:_:)") {
+			it("should update state and output separately") {
+				let (baseSignal, observer) = Signal<Int, Never>.pipe()
+				let signal = baseSignal.scanMap(false) { state, value -> (Bool, String) in
+					return (true, state ? "\(value)" : "initial")
+				}
+
+				var lastValue: String?
+
+				signal.observeValues { lastValue = $0 }
+
+				expect(lastValue).to(beNil())
+
+				observer.send(value: 1)
+				expect(lastValue) == "initial"
+
+				observer.send(value: 2)
+				expect(lastValue) == "2"
+
+				observer.send(value: 3)
+				expect(lastValue) == "3"
+			}
+		}
+
+		describe("scanMap(into:_:)") {
+			it("should update state and output separately") {
+				let (baseSignal, observer) = Signal<Int, Never>.pipe()
+				let signal = baseSignal.scanMap(into: false) { (state: inout Bool, value: Int) -> String in
+					defer { state = true }
+					return state ? "\(value)" : "initial"
+				}
+
+				var lastValue: String?
+
+				signal.observeValues { lastValue = $0 }
+
+				expect(lastValue).to(beNil())
+
+				observer.send(value: 1)
+				expect(lastValue) == "initial"
+
+				observer.send(value: 2)
+				expect(lastValue) == "2"
+
+				observer.send(value: 3)
+				expect(lastValue) == "3"
 			}
 		}
 
@@ -2777,7 +2832,7 @@ class SignalSpec: QuickSpec {
 
 				zipped.observe { event in
 					switch event {
-					case let .value(left, right):
+					case let .value((left, right)):
 						result.append("\(left)\(right)")
 					case .completed:
 						completed = true
@@ -2804,7 +2859,7 @@ class SignalSpec: QuickSpec {
 
 				zipped.observe { event in
 					switch event {
-					case let .value(left, right):
+					case let .value((left, right)):
 						result.append("\(left)\(right)")
 					case .completed:
 						completed = true
@@ -2830,7 +2885,7 @@ class SignalSpec: QuickSpec {
 
 				zipped.observe { event in
 					switch event {
-					case let .value(left, right):
+					case let .value((left, right)):
 						result.append("\(left)\(right)")
 					case .completed:
 						completed = true
@@ -3761,6 +3816,40 @@ class SignalSpec: QuickSpec {
 				observer2.sendCompleted()
 			}
 		}
+		
+		describe("all attribute") {
+			it("should emit false when any signal emits opposite values") {
+				let (signal1, observer1) = Signal<Bool, Never>.pipe()
+				let (signal2, observer2) = Signal<Bool, Never>.pipe()
+				let (signal3, observer3) = Signal<Bool, Never>.pipe()
+				Signal.all([signal1, signal2, signal3]).observeValues { value in
+					expect(value).to(beFalse())
+				}
+				observer1.send(value: false)
+				observer2.send(value: true)
+				observer3.send(value: false)
+
+				observer1.sendCompleted()
+				observer2.sendCompleted()
+				observer3.sendCompleted()
+			}
+
+			it("should emit true when all signals emit the same value") {
+				let (signal1, observer1) = Signal<Bool, Never>.pipe()
+				let (signal2, observer2) = Signal<Bool, Never>.pipe()
+				let (signal3, observer3) = Signal<Bool, Never>.pipe()
+				Signal.all([signal1, signal2, signal3]).observeValues { value in
+					expect(value).to(beTrue())
+				}
+				observer1.send(value: true)
+				observer2.send(value: true)
+				observer3.send(value: true)
+
+				observer1.sendCompleted()
+				observer2.sendCompleted()
+				observer3.sendCompleted()
+			}
+		}
 
 		describe("or attribute") {
 			it("should emit true when at least one of the signals emits true") {
@@ -3787,6 +3876,40 @@ class SignalSpec: QuickSpec {
 
 				observer1.sendCompleted()
 				observer2.sendCompleted()
+			}
+		}
+
+		describe("any attribute") {
+			it("should emit true when at least one of the signals in array emits true") {
+				let (signal1, observer1) = Signal<Bool, Never>.pipe()
+				let (signal2, observer2) = Signal<Bool, Never>.pipe()
+				let (signal3, observer3) = Signal<Bool, Never>.pipe()
+				Signal.any([signal1, signal2, signal3]).observeValues { value in
+					expect(value).to(beTrue())
+				}
+				observer1.send(value: true)
+				observer2.send(value: false)
+				observer3.send(value: false)
+
+				observer1.sendCompleted()
+				observer2.sendCompleted()
+				observer3.sendCompleted()
+			}
+			
+			it("should emit false when all signals in array emits false") {
+				let (signal1, observer1) = Signal<Bool, Never>.pipe()
+				let (signal2, observer2) = Signal<Bool, Never>.pipe()
+				let (signal3, observer3) = Signal<Bool, Never>.pipe()
+				Signal.any([signal1, signal2, signal3]).observeValues { value in
+					expect(value).to(beFalse())
+				}
+				observer1.send(value: false)
+				observer2.send(value: false)
+				observer3.send(value: false)
+
+				observer1.sendCompleted()
+				observer2.sendCompleted()
+				observer3.sendCompleted()
 			}
 		}
 

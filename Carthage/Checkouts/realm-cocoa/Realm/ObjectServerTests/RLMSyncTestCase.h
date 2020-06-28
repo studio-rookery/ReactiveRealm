@@ -24,7 +24,7 @@ typedef void(^RLMSyncBasicErrorReportingBlock)(NSError * _Nullable);
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RLMSyncManager ()
-- (void)setSessionCompletionNotifier:(RLMSyncBasicErrorReportingBlock)sessionCompletionNotifier;
+- (void)setSessionCompletionNotifier:(nullable RLMSyncBasicErrorReportingBlock)sessionCompletionNotifier;
 @end
 
 @interface SyncObject : RLMObject
@@ -37,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface RLMSyncTestCase : RLMMultiProcessTestCase
-
-+ (RLMSyncManager *)managerForCurrentTest;
 
 + (NSURL *)authServerURL;
 + (NSURL *)secureAuthServerURL;
@@ -59,6 +57,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Synchronously open a synced Realm and wait until the binding process has completed or failed.
 - (RLMRealm *)openRealmWithConfiguration:(RLMRealmConfiguration *)configuration;
+
+/// Synchronously open a synced Realm via asyncOpen and return the Realm.
+- (RLMRealm *)asyncOpenRealmWithConfiguration:(RLMRealmConfiguration *)configuration;
+
+/// Synchronously open a synced Realm via asyncOpen and return the expected error.
+- (NSError *)asyncOpenErrorWithConfiguration:(RLMRealmConfiguration *)configuration;
 
 /// Synchronously open a synced Realm. Also run a block right after the Realm is created.
 - (RLMRealm *)openRealmForURL:(NSURL *)url
@@ -124,6 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Manually set the refresh token for a user. Used for testing invalid token conditions.
 - (void)manuallySetRefreshTokenForUser:(RLMSyncUser *)user value:(NSString *)tokenValue;
+
+- (void)setupSyncManager;
+- (void)resetSyncManager;
 
 @end
 

@@ -20,6 +20,8 @@
 
 #import "RLMConstants.h"
 
+#if !TARGET_OS_MACCATALYST
+
 @interface InterprocessTest : RLMMultiProcessTestCase
 @end
 
@@ -65,7 +67,7 @@
         @autoreleasepool {
             RLMRealm *realm = RLMRealm.defaultRealm;
             [realm transactionWithBlock:^{
-                for (int i = 0; i < 100; ++i) {
+                for (int i = 0; i < 1000; ++i) {
                     [IntObject createInRealm:realm withValue:@[@(i)]];
                 }
             }];
@@ -412,3 +414,5 @@
 }
 
 @end
+
+#endif

@@ -11,24 +11,23 @@
 
 #include "catch_platform.h"
 
-#include <string>
-
-namespace Catch{
-
+namespace Catch {
     bool isDebuggerActive();
-    void writeToDebugConsole( std::string const& text );
 }
 
 #ifdef CATCH_PLATFORM_MAC
 
-    // The following code snippet based on:
-    // http://cocoawithlove.com/2008/03/break-into-debugger.html
-    #if defined(__ppc64__) || defined(__ppc__)
-        #define CATCH_TRAP() \
-                __asm__("li r0, 20\nsc\nnop\nli r0, 37\nli r4, 2\nsc\nnop\n" \
-                : : : "memory","r0","r3","r4" ) /* NOLINT */
-    #else
-        #define CATCH_TRAP() __asm__("int $3\n" : : /* NOLINT */ )
+    #define CATCH_TRAP() __asm__("int $3\n" : : ) /* NOLINT */
+
+#elif defined(CATCH_PLATFORM_IPHONE)
+
+    // use inline assembler
+    #if defined(__i386__) || defined(__x86_64__)
+        #define CATCH_TRAP()  __asm__("int $3")
+    #elif defined(__aarch64__)
+        #define CATCH_TRAP()  __asm__(".inst 0xd4200000")
+    #elif defined(__arm__)
+        #define CATCH_TRAP()  __asm__(".inst 0xe7f001f0")
     #endif
 
 #elif defined(CATCH_PLATFORM_LINUX)
@@ -50,9 +49,9 @@ namespace Catch{
 #endif
 
 #ifdef CATCH_TRAP
-    #define CATCH_BREAK_INTO_DEBUGGER() if( Catch::isDebuggerActive() ) { CATCH_TRAP(); }
+    #define CATCH_BREAK_INTO_DEBUGGER() []{ if( Catch::isDebuggerActive() ) { CATCH_TRAP(); } }()
 #else
-    #define CATCH_BREAK_INTO_DEBUGGER() Catch::alwaysTrue();
+    #define CATCH_BREAK_INTO_DEBUGGER() []{}()
 #endif
 
 #endif // TWOBLUECUBES_CATCH_DEBUGGER_H_INCLUDED

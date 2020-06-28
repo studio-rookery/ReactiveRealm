@@ -1,5 +1,5 @@
 ALWAYS_SEARCH_USER_PATHS = NO;
-CLANG_CXX_LANGUAGE_STANDARD = c++14;
+CLANG_CXX_LANGUAGE_STANDARD = c++17;
 CLANG_CXX_LIBRARY = libc++;
 CLANG_ENABLE_MODULES = YES;
 CLANG_ENABLE_OBJC_ARC = YES;
@@ -45,7 +45,10 @@ GCC_WARN_UNUSED_VARIABLE = YES;
 SWIFT_COMPILATION_MODE = wholemodule;
 SWIFT_OPTIMIZATION_LEVEL = -Owholemodule;
 WARNING_CFLAGS = -Wmismatched-tags -Wunused-private-field -Wpartial-availability;
-OTHER_CFLAGS = -fvisibility-inlines-hidden;
+OTHER_CFLAGS = -fvisibility-inlines-hidden $(REALM_CATALYST_FLAGS);
+OTHER_CFLAGS[arch=armv7] = -fvisibility-inlines-hidden -fno-aligned-new $(REALM_CATALYST_FLAGS);
+OTHER_LDFLAGS = $(REALM_CATALYST_FLAGS);
+OTHER_SWIFT_FLAGS = $(REALM_CATALYST_FLAGS);
 
 OTHER_CPLUSPLUSFLAGS = $(inherited) -isystem core/include;
 HEADER_SEARCH_PATHS = $(inherited) Realm/ObjectStore/src;
@@ -59,3 +62,5 @@ WATCHOS_DEPLOYMENT_TARGET = 2.0;
 TVOS_DEPLOYMENT_TARGET = 9.0;
 
 SWIFT_VERSION = 4.0;
+TARGETED_DEVICE_FAMILY = 1,2,3,4;
+SDKROOT = $(REALM_SDKROOT);
