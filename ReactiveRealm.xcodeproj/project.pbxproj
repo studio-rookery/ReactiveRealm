@@ -25,7 +25,6 @@
 		C92833AF21E5FFC200BE56AC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AE21E5FFC200BE56AC /* ObservableObject.swift */; };
 		C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B021E6007300BE56AC /* RealmObjectError.swift */; };
 		C92833B321E6024E00BE56AC /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B221E6024E00BE56AC /* Error.swift */; };
-		C92833B721E602B400BE56AC /* ObservableObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B621E602B400BE56AC /* ObservableObjectTests.swift */; };
 		C92833BA21E6081700BE56AC /* SignalProducer+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */; };
 		C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */; };
 		C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98A73C52201916A00A1E8A1 /* ListTests.swift */; };
@@ -35,6 +34,7 @@
 		F489FD96222FF3EC0018E679 /* MockToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD95222FF3EC0018E679 /* MockToken.swift */; };
 		F489FD98222FF5850018E679 /* RealmCollectionChange+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */; };
 		F489FD9A222FFC8F0018E679 /* LinkingObjectsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */; };
+		F4EBB76F24A8E7D100506248 /* ResultProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,7 +83,6 @@
 		C92833AE21E5FFC200BE56AC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		C92833B021E6007300BE56AC /* RealmObjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmObjectError.swift; sourceTree = "<group>"; };
 		C92833B221E6024E00BE56AC /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
-		C92833B621E602B400BE56AC /* ObservableObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObjectTests.swift; sourceTree = "<group>"; };
 		C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SignalProducer+Extension.swift"; sourceTree = "<group>"; };
 		C92833BB21E6091A00BE56AC /* SignalProducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalProducerTests.swift; sourceTree = "<group>"; };
 		C98A73C52201916A00A1E8A1 /* ListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTests.swift; sourceTree = "<group>"; };
@@ -93,6 +92,7 @@
 		F489FD95222FF3EC0018E679 /* MockToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockToken.swift; sourceTree = "<group>"; };
 		F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RealmCollectionChange+Extension.swift"; sourceTree = "<group>"; };
 		F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkingObjectsTests.swift; sourceTree = "<group>"; };
+		F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,7 +159,6 @@
 				C9B447C0222F7A190027080F /* Mock */,
 				C98A73C722027BE100A1E8A1 /* ObjectTests.swift */,
 				C92833AC21E5F8A300BE56AC /* ObservableCollectionTests.swift */,
-				C92833B621E602B400BE56AC /* ObservableObjectTests.swift */,
 				C928339721E5ECB700BE56AC /* ResultsTests.swift */,
 				C98A73C52201916A00A1E8A1 /* ListTests.swift */,
 				F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */,
@@ -203,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				C92833B921E6081700BE56AC /* SignalProducer+Extension.swift */,
+				F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -329,6 +329,7 @@
 			files = (
 				C92833AF21E5FFC200BE56AC /* ObservableObject.swift in Sources */,
 				C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */,
+				F4EBB76F24A8E7D100506248 /* ResultProtocol.swift in Sources */,
 				C928339621E5EA7D00BE56AC /* ObeservableCollection.swift in Sources */,
 				C92833BA21E6081700BE56AC /* SignalProducer+Extension.swift in Sources */,
 				C92833B121E6007300BE56AC /* RealmObjectError.swift in Sources */,
@@ -352,7 +353,6 @@
 				C92833A921E5EE9400BE56AC /* Dog.swift in Sources */,
 				C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */,
 				C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */,
-				C92833B721E602B400BE56AC /* ObservableObjectTests.swift in Sources */,
 				C98A73C62201916A00A1E8A1 /* ListTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

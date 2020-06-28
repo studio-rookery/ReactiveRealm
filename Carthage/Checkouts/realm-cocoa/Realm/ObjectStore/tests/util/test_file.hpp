@@ -22,9 +22,10 @@
 #include "shared_realm.hpp"
 #include "util/tagged_bool.hpp"
 
-#include <realm/group_shared.hpp>
 #include <realm/util/logger.hpp>
 #include <realm/util/optional.hpp>
+
+#include <thread>
 
 #if REALM_ENABLE_SYNC
 #include "sync/sync_config.hpp"
@@ -32,16 +33,16 @@
 #include <realm/sync/client.hpp>
 #include <realm/sync/server.hpp>
 
-namespace realm {
-struct SyncConfig;
-class Schema;
-enum class SyncSessionStopPolicy;
-}
-
 // {"identity":"test", "access": ["download", "upload"]}
 static const std::string s_test_token = "eyJpZGVudGl0eSI6InRlc3QiLCAiYWNjZXNzIjogWyJkb3dubG9hZCIsICJ1cGxvYWQiXX0=";
+#endif // REALM_ENABLE_SYNC
 
-#endif
+namespace realm {
+class Schema;
+enum class SyncSessionStopPolicy;
+struct DBOptions;
+struct SyncConfig;
+}
 
 class JoiningThread {
 public:
@@ -59,13 +60,16 @@ struct TestFile : realm::Realm::Config {
     TestFile();
     ~TestFile();
 
-    auto options() const
+    // The file should outlive the object, ie. should not be deleted in destructor
+    void persist()
     {
-        realm::SharedGroupOptions options;
-        options.durability = in_memory ? realm::SharedGroupOptions::Durability::MemOnly
-                                       : realm::SharedGroupOptions::Durability::Full;
-        return options;
+        m_persist = true;
     }
+
+    realm::DBOptions options() const;
+
+private:
+    bool m_persist = false;
 };
 
 struct InMemoryTestFile : TestFile {
@@ -73,6 +77,7 @@ struct InMemoryTestFile : TestFile {
 };
 
 void advance_and_notify(realm::Realm& realm);
+void on_change_but_no_notify(realm::Realm& realm);
 
 #if REALM_ENABLE_SYNC
 
@@ -82,15 +87,13 @@ struct TestLogger : realm::util::Logger::LevelThreshold, realm::util::Logger {
     void do_log(realm::util::Logger::Level, std::string) override {}
     Level get() const noexcept override { return Level::off; }
     TestLogger() : Logger::LevelThreshold(), Logger(static_cast<Logger::LevelThreshold&>(*this)) { }
-
-    static realm::sync::Server::Config server_config();
 };
 
 using StartImmediately = realm::util::TaggedBool<class StartImmediatelyTag>;
 
-class SyncServer {
+class SyncServer : private realm::sync::Clock {
 public:
-    SyncServer(StartImmediately start_immediately=true);
+    SyncServer(StartImmediately start_immediately=true, std::string local_dir = "");
     ~SyncServer();
 
     void start();
@@ -98,11 +101,26 @@ public:
 
     std::string url_for_realm(realm::StringData realm_name) const;
     std::string base_url() const { return m_url; }
+    std::string local_root_dir() const { return m_local_root_dir; }
+
+    template <class R, class P>
+    void advance_clock(std::chrono::duration<R, P> duration = std::chrono::seconds(1)) noexcept
+    {
+        m_now += std::chrono::duration_cast<time_point::duration>(duration).count();
+    }
 
 private:
+    std::string m_local_root_dir;
+    std::unique_ptr<realm::util::Logger> m_logger;
     realm::sync::Server m_server;
     std::thread m_thread;
     std::string m_url;
+    std::atomic<time_point::rep> m_now{0};
+
+    time_point now() const noexcept override
+    {
+        return time_point{time_point::duration{m_now}};
+    }
 };
 
 struct SyncTestFile : TestFile {
@@ -121,6 +139,12 @@ struct SyncTestFile : TestFile {
 
     SyncTestFile(SyncServer& server, std::string name="", bool is_partial=false,
                  std::string user_name="test");
+};
+
+struct TestSyncManager {
+    TestSyncManager(std::string const& base_path="", realm::SyncManager::MetadataMode = realm::SyncManager::MetadataMode::NoEncryption);
+    ~TestSyncManager();
+    static void configure(std::string const& base_path, realm::SyncManager::MetadataMode);
 };
 
 void wait_for_upload(realm::Realm& realm);

@@ -13,19 +13,6 @@ import ReactiveSwift
 
 final class ResultsTests: XCTestCase {
     
-    func testRetainResultsWhileObservation() {
-        let realm = Realm.inMemory()
-        var results: Results<Person>! = realm.objects(Person.self)
-        weak var weakResults: Results<Person>? = results
-        
-        let disposable = results.reactive.producer.start()
-        
-        results = nil
-        XCTAssertNotNil(weakResults)
-        
-        disposable.dispose()
-        XCTAssertNil(weakResults)
-    }
 }
 
 // MARK: - Producer

@@ -15,7 +15,7 @@ public protocol ObeservableCollection: ReactiveExtensionsProvider {
     
     associatedtype NotificationTokenType: NotificationTokenProtocol
     
-    func observe(_ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
+    func observe(on queue: DispatchQueue?, _ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
 }
 
 extension Results: ObeservableCollection {
@@ -46,7 +46,7 @@ public extension Reactive where Base: ObeservableCollection {
             
             observer.send(value: self.base)
             
-            let token = self.base.observe { change in
+            let token = self.base.observe(on: nil) { change in
                 switch change {
                 case .initial:
                     break

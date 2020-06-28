@@ -186,52 +186,57 @@ class SwiftObjectServerTests: SwiftSyncTestCase {
 
     // MARK: - Progress notifiers
 
-    func testStreamingDownloadNotifier() {
-        let bigObjectCount = 2
-        do {
-            var callCount = 0
-            var transferred = 0
-            var transferrable = 0
-            let user = try synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
-            let realm = try synchronouslyOpenRealm(url: realmURL, user: user)
-            if isParent {
-                let session = realm.syncSession
-                XCTAssertNotNil(session)
-                let ex = expectation(description: "streaming-downloads-expectation")
-                var hasBeenFulfilled = false
-                let token = session!.addProgressNotification(for: .download, mode: .reportIndefinitely) { p in
-                    callCount += 1
-                    XCTAssert(p.transferredBytes >= transferred)
-                    XCTAssert(p.transferrableBytes >= transferrable)
-                    transferred = p.transferredBytes
-                    transferrable = p.transferrableBytes
-                    if p.transferredBytes > 0 && p.isTransferComplete && !hasBeenFulfilled {
-                        ex.fulfill()
-                        hasBeenFulfilled = true
-                    }
-                }
-                // Wait for the child process to upload all the data.
-                executeChild()
-                waitForExpectations(timeout: 10.0, handler: nil)
-                token!.invalidate()
-                XCTAssert(callCount > 1)
-                XCTAssert(transferred >= transferrable)
-            } else {
-                try realm.write {
-                    for _ in 0..<bigObjectCount {
-                        realm.add(SwiftHugeSyncObject())
-                    }
-                }
-                waitForUploads(for: realm)
-                checkCount(expected: bigObjectCount, realm, SwiftHugeSyncObject.self)
+    let bigObjectCount = 2
+
+    func populateRealm(user: SyncUser, url: URL) {
+        let realm = try! synchronouslyOpenRealm(url: realmURL, user: user)
+        try! realm.write {
+            for _ in 0..<bigObjectCount {
+                realm.add(SwiftHugeSyncObject())
             }
-        } catch {
-            XCTFail("Got an error: \(error) (process: \(isParent ? "parent" : "child"))")
         }
+        waitForUploads(for: realm)
+        checkCount(expected: bigObjectCount, realm, SwiftHugeSyncObject.self)
+    }
+
+    func testStreamingDownloadNotifier() {
+        let user = try! synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
+        if !isParent {
+            populateRealm(user: user, url: realmURL)
+            return
+        }
+
+        var callCount = 0
+        var transferred = 0
+        var transferrable = 0
+        let realm = try! synchronouslyOpenRealm(url: realmURL, user: user)
+
+        let session = realm.syncSession
+        XCTAssertNotNil(session)
+        let ex = expectation(description: "streaming-downloads-expectation")
+        var hasBeenFulfilled = false
+        let token = session!.addProgressNotification(for: .download, mode: .reportIndefinitely) { p in
+            callCount += 1
+            XCTAssert(p.transferredBytes >= transferred)
+            XCTAssert(p.transferrableBytes >= transferrable)
+            transferred = p.transferredBytes
+            transferrable = p.transferrableBytes
+            if p.transferredBytes > 0 && p.isTransferComplete && !hasBeenFulfilled {
+                ex.fulfill()
+                hasBeenFulfilled = true
+            }
+        }
+
+        // Wait for the child process to upload all the data.
+        executeChild()
+
+        waitForExpectations(timeout: 10.0, handler: nil)
+        token!.invalidate()
+        XCTAssert(callCount > 1)
+        XCTAssert(transferred >= transferrable)
     }
 
     func testStreamingUploadNotifier() {
-        let bigObjectCount = 2
         do {
             var transferred = 0
             var transferrable = 0
@@ -267,44 +272,162 @@ class SwiftObjectServerTests: SwiftSyncTestCase {
     // MARK: - Download Realm
 
     func testDownloadRealm() {
-        let bigObjectCount = 2
-        do {
-            let user = try synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
-            if isParent {
-                // Wait for the child process to upload everything.
-                executeChild()
-                let ex = expectation(description: "download-realm")
-                let config = user.configuration(realmURL: realmURL, fullSynchronization: true)
-                let pathOnDisk = ObjectiveCSupport.convert(object: config).pathOnDisk
-                XCTAssertFalse(FileManager.default.fileExists(atPath: pathOnDisk))
-                Realm.asyncOpen(configuration: config) { realm, error in
-                    XCTAssertNil(error)
-                    self.checkCount(expected: bigObjectCount, realm!, SwiftHugeSyncObject.self)
-                    ex.fulfill()
-                }
-                func fileSize(path: String) -> Int {
-                    if let attr = try? FileManager.default.attributesOfItem(atPath: path) {
-                        return attr[.size] as! Int
-                    }
-                    return 0
-                }
-                XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
-                waitForExpectations(timeout: 10.0, handler: nil)
-                XCTAssertGreaterThan(fileSize(path: pathOnDisk), 0)
-                XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
-            } else {
-                let realm = try synchronouslyOpenRealm(url: realmURL, user: user)
-                // Write lots of data to the Realm, then wait for it to be uploaded.
-                try realm.write {
-                    for _ in 0..<bigObjectCount {
-                        realm.add(SwiftHugeSyncObject())
-                    }
-                }
-                waitForUploads(for: realm)
-                checkCount(expected: bigObjectCount, realm, SwiftHugeSyncObject.self)
+        let user = try! synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
+        if !isParent {
+            populateRealm(user: user, url: realmURL)
+            return
+        }
+
+        // Wait for the child process to upload everything.
+        executeChild()
+
+        let ex = expectation(description: "download-realm")
+        let config = user.configuration(realmURL: realmURL, fullSynchronization: true)
+        let pathOnDisk = ObjectiveCSupport.convert(object: config).pathOnDisk
+        XCTAssertFalse(FileManager.default.fileExists(atPath: pathOnDisk))
+        Realm.asyncOpen(configuration: config) { realm, error in
+            XCTAssertNil(error)
+            self.checkCount(expected: self.bigObjectCount, realm!, SwiftHugeSyncObject.self)
+            ex.fulfill()
+        }
+        func fileSize(path: String) -> Int {
+            if let attr = try? FileManager.default.attributesOfItem(atPath: path) {
+                return attr[.size] as! Int
             }
-        } catch {
-            XCTFail("Got an error: \(error) (process: \(isParent ? "parent" : "child"))")
+            return 0
+        }
+        XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
+        waitForExpectations(timeout: 10.0, handler: nil)
+        XCTAssertGreaterThan(fileSize(path: pathOnDisk), 0)
+        XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
+    }
+
+    func testDownloadRealmToCustomPath() {
+        let user = try! synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
+        if !isParent {
+            populateRealm(user: user, url: realmURL)
+            return
+        }
+
+        // Wait for the child process to upload everything.
+        executeChild()
+
+        let ex = expectation(description: "download-realm")
+        let customFileURL = realmURLForFile("copy")
+        var config = user.configuration(realmURL: realmURL, fullSynchronization: true)
+        config.fileURL = customFileURL
+        let pathOnDisk = ObjectiveCSupport.convert(object: config).pathOnDisk
+        XCTAssertEqual(pathOnDisk, customFileURL.path)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: pathOnDisk))
+        Realm.asyncOpen(configuration: config) { realm, error in
+            XCTAssertNil(error)
+            self.checkCount(expected: self.bigObjectCount, realm!, SwiftHugeSyncObject.self)
+            ex.fulfill()
+        }
+        func fileSize(path: String) -> Int {
+            if let attr = try? FileManager.default.attributesOfItem(atPath: path) {
+                return attr[.size] as! Int
+            }
+            return 0
+        }
+        XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
+        waitForExpectations(timeout: 10.0, handler: nil)
+        XCTAssertGreaterThan(fileSize(path: pathOnDisk), 0)
+        XCTAssertFalse(RLMHasCachedRealmForPath(pathOnDisk))
+    }
+
+
+    func testCancelDownloadRealm() {
+        let user = try! synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
+        if !isParent {
+            populateRealm(user: user, url: realmURL)
+            return
+        }
+
+        // Wait for the child process to upload everything.
+        executeChild()
+
+        // Use a serial queue for asyncOpen to ensure that the first one adds
+        // the completion block before the second one cancels it
+        RLMSetAsyncOpenQueue(DispatchQueue(label: "io.realm.asyncOpen"))
+
+        let ex = expectation(description: "async open")
+        let config = user.configuration(realmURL: realmURL, fullSynchronization: true)
+        Realm.asyncOpen(configuration: config) { _, error in
+            XCTAssertNotNil(error)
+            ex.fulfill()
+        }
+        let task = Realm.asyncOpen(configuration: config) { _, _ in
+            XCTFail("Cancelled completion handler was called")
+        }
+        task.cancel()
+        waitForExpectations(timeout: 10.0, handler: nil)
+    }
+
+    func testAsyncOpenProgress() {
+        let user = try! synchronouslyLogInUser(for: basicCredentials(register: isParent), server: authURL)
+        if !isParent {
+            populateRealm(user: user, url: realmURL)
+            return
+        }
+
+        // Wait for the child process to upload everything.
+        executeChild()
+
+        let ex1 = expectation(description: "async open")
+        let ex2 = expectation(description: "download progress")
+        let config = user.configuration(realmURL: realmURL, fullSynchronization: true)
+        let task = Realm.asyncOpen(configuration: config) { _, error in
+            XCTAssertNil(error)
+            ex1.fulfill()
+        }
+        task.addProgressNotification { progress in
+            if progress.isTransferComplete {
+                ex2.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 10.0, handler: nil)
+    }
+
+    func testAsyncOpenTimeout() {
+        let syncTimeoutOptions = SyncTimeoutOptions()
+        syncTimeoutOptions.connectTimeout = 3000
+        SyncManager.shared.timeoutOptions = syncTimeoutOptions
+
+        // The server proxy adds a 2 second delay, so a 3 second timeout should succeed
+        autoreleasepool {
+            let user = try! synchronouslyLogInUser(for: basicCredentials(register: true), server: slowConnectAuthURL)
+            let config = user.configuration(cancelAsyncOpenOnNonFatalErrors: true)
+            let ex = expectation(description: "async open")
+            Realm.asyncOpen(configuration: config) { _, error in
+                XCTAssertNil(error)
+                ex.fulfill()
+            }
+            waitForExpectations(timeout: 10.0, handler: nil)
+            user.logOut()
+        }
+
+        self.resetSyncManager()
+        self.setupSyncManager()
+
+        // and a 1 second timeout should fail
+        autoreleasepool {
+            let user = try! synchronouslyLogInUser(for: basicCredentials(register: true), server: slowConnectAuthURL)
+            let config = user.configuration(cancelAsyncOpenOnNonFatalErrors: true)
+
+            syncTimeoutOptions.connectTimeout = 1000
+            SyncManager.shared.timeoutOptions = syncTimeoutOptions
+
+            let ex = expectation(description: "async open")
+            Realm.asyncOpen(configuration: config) { _, error in
+                XCTAssertNotNil(error)
+                if let error = error as NSError? {
+                    XCTAssertEqual(error.code, Int(ETIMEDOUT))
+                    XCTAssertEqual(error.domain, NSPOSIXErrorDomain)
+                }
+                ex.fulfill()
+            }
+            waitForExpectations(timeout: 4.0, handler: nil)
         }
     }
 
@@ -393,41 +516,6 @@ class SwiftObjectServerTests: SwiftSyncTestCase {
         }
     }
 
-    // MARK: - Offline client reset
-
-    func testOfflineClientReset() {
-        let user = try! synchronouslyLogInUser(for: basicCredentials(), server: authURL)
-
-        let sourceFileURL = Bundle(for: type(of: self)).url(forResource: "sync-1.x", withExtension: "realm")!
-        let fileName = "\(UUID()).realm"
-        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(fileName)
-        try! FileManager.default.copyItem(at: sourceFileURL, to: fileURL)
-
-        let syncConfig = RLMSyncConfiguration(user: user, realmURL: realmURL)
-        syncConfig.customFileURL = fileURL
-        let config = Realm.Configuration(syncConfiguration: ObjectiveCSupport.convert(object: syncConfig))
-        do {
-            _ = try Realm(configuration: config)
-        } catch let e as Realm.Error where e.code == .incompatibleSyncedFile {
-            var backupConfiguration = e.backupConfiguration
-            XCTAssertNotNil(backupConfiguration)
-
-            // Open the backup Realm with a schema subset since it was created using the schema from .NET's unit tests.
-            backupConfiguration!.objectTypes = [Person.self]
-            let backupRealm = try! Realm(configuration: backupConfiguration!)
-
-            let people = backupRealm.objects(Person.self)
-            XCTAssertEqual(people.count, 1)
-            XCTAssertEqual(people[0].FirstName, "John")
-            XCTAssertEqual(people[0].LastName, "Smith")
-
-            // Verify that we can now successfully open the original synced Realm.
-            _ = try! Realm(configuration: config)
-        } catch {
-            fatalError("Unexpected error: \(error)")
-        }
-    }
-
     // MARK: - Certificate Pinning
 
     func testSecureConnectionToLocalhostWithDefaultSecurity() {
@@ -489,5 +577,11 @@ class SwiftObjectServerTests: SwiftSyncTestCase {
 
         _ = try! Realm(configuration: config)
         self.waitForExpectations(timeout: 4.0)
+    }
+
+    private func realmURLForFile(_ fileName: String) -> URL {
+        let testDir = RLMRealmPathForFile("realm-object-server")
+        let directory = URL(fileURLWithPath: testDir, isDirectory: true)
+        return directory.appendingPathComponent(fileName, isDirectory: false)
     }
 }

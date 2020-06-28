@@ -124,7 +124,7 @@ RLM_ARRAY_TYPE(NonDefaultObject);
 @end
 
 @implementation SchemaTestClassWithSingleDuplicateProperty
-@dynamic string;
+@synthesize string;
 @end
 
 @interface SchemaTestClassWithMultipleDuplicatePropertiesBase : FakeObject
@@ -141,8 +141,8 @@ RLM_ARRAY_TYPE(NonDefaultObject);
 @end
 
 @implementation SchemaTestClassWithMultipleDuplicateProperties
-@dynamic string;
-@dynamic integer;
+@synthesize string;
+@synthesize integer;
 @end
 
 @interface UnindexableProperty : FakeObject
@@ -154,11 +154,19 @@ RLM_ARRAY_TYPE(NonDefaultObject);
 }
 @end
 
-
 @interface InvalidPrimaryKeyType : FakeObject
 @property double primaryKey;
 @end
 @implementation InvalidPrimaryKeyType
++ (NSString *)primaryKey {
+    return @"primaryKey";
+}
+@end
+
+@interface MissingPrimaryKey : FakeObject
+@property int pk;
+@end
+@implementation MissingPrimaryKey
 + (NSString *)primaryKey {
     return @"primaryKey";
 }
@@ -304,11 +312,6 @@ RLM_ARRAY_TYPE(NotARealClass)
 @end
 
 @implementation SchemaTests
-
-- (void)tearDown {
-    RLMSetTreatFakeObjectAsRLMObject(NO);
-    [super tearDown];
-}
 
 - (void)testNoSchemaForUnmanagedObjectClasses {
     RLMSchema *schema = [RLMSchema sharedSchema];
@@ -639,15 +642,19 @@ RLM_ARRAY_TYPE(NotARealClass)
 
 - (void)testClassWithDuplicateProperties
 {
-    // If a property is overriden in a child class it should not be picked up more than once.
-    RLMObjectSchema *firstSchema = [RLMObjectSchema schemaForObjectClass:SchemaTestClassWithSingleDuplicateProperty.class];
-    XCTAssertEqual((int)firstSchema.properties.count, 1);
-    RLMObjectSchema *secondSchema = [RLMObjectSchema schemaForObjectClass:SchemaTestClassWithMultipleDuplicateProperties.class];
-    XCTAssertEqual((int)secondSchema.properties.count, 2);
+    RLMAssertThrowsWithReasonMatching([RLMObjectSchema schemaForObjectClass:SchemaTestClassWithSingleDuplicateProperty.class],
+                                      @"'string' .* multiple times .* 'SchemaTestClassWithSingleDuplicateProperty'");
+    RLMAssertThrowsWithReasonMatching([RLMObjectSchema schemaForObjectClass:SchemaTestClassWithMultipleDuplicateProperties.class],
+                                      @"'SchemaTestClassWithMultipleDuplicateProperties' .* declared multiple times");
 }
 
 - (void)testClassWithInvalidPrimaryKey {
     XCTAssertThrows([RLMObjectSchema schemaForObjectClass:InvalidPrimaryKeyType.class]);
+}
+
+- (void)testClassWithMissingPrimaryKey {
+    RLMAssertThrowsWithReason([RLMObjectSchema schemaForObjectClass:MissingPrimaryKey.class],
+                              @"Primary key property 'primaryKey' does not exist on object 'MissingPrimaryKey'");
 }
 
 - (void)testClassWithUnindexableProperty {
@@ -720,7 +727,6 @@ RLM_ARRAY_TYPE(NotARealClass)
 }
 
 - (void)testClassWithInvalidLinkingObjectsPropertyMissingSourcePropertyOfLink {
-    RLMSetTreatFakeObjectAsRLMObject(YES);
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
     config.customSchema = [RLMSchema schemaWithObjectClasses:@[ InvalidLinkingObjectsPropertyMissingSourcePropertyOfLink.class ]];
     RLMAssertThrowsWithReasonMatching([RLMRealm realmWithConfiguration:config error:nil],
@@ -728,7 +734,6 @@ RLM_ARRAY_TYPE(NotARealClass)
 }
 
 - (void)testClassWithInvalidLinkingObjectsPropertySourcePropertyNotALink {
-    RLMSetTreatFakeObjectAsRLMObject(YES);
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
     config.customSchema = [RLMSchema schemaWithObjectClasses:@[ InvalidLinkingObjectsPropertySourcePropertyNotALink.class ]];
     RLMAssertThrowsWithReasonMatching([RLMRealm realmWithConfiguration:config error:nil],
@@ -736,7 +741,6 @@ RLM_ARRAY_TYPE(NotARealClass)
 }
 
 - (void)testClassWithInvalidLinkingObjectsPropertySourcePropertysLinkElsewhere {
-    RLMSetTreatFakeObjectAsRLMObject(YES);
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
     config.customSchema = [RLMSchema schemaWithObjectClasses:@[ InvalidLinkingObjectsPropertySourcePropertyLinksElsewhere.class, IntObject.class ]];
     RLMAssertThrowsWithReasonMatching([RLMRealm realmWithConfiguration:config error:nil],
@@ -744,14 +748,13 @@ RLM_ARRAY_TYPE(NotARealClass)
 }
 
 - (void)testMixedIsRejected {
-    RLMSetTreatFakeObjectAsRLMObject(YES);
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
     RLMAssertThrowsWithReasonMatching(config.objectClasses = @[[MixedProperty class]],
                                       @"Property 'mixed' is declared as 'id'.*");
 }
 
 // Can't spawn child processes on iOS
-#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
+#if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_MACCATALYST
 - (void)testPartialSharedSchemaInit {
     if (self.isParent) {
         RLMRunChildAndWait();
@@ -1054,7 +1057,8 @@ RLM_ARRAY_TYPE(NotARealClass)
         config.dynamic = true;
         RLMRealm *realm = [RLMRealm realmWithConfiguration:config error:nil];
         [realm beginWriteTransaction];
-        realm->_info[@"IntObject"].table()->insert_column(0, realm::type_String, "col");
+        auto table = realm->_info[@"IntObject"].table();
+        table->add_column(realm::type_String, realm::util::format("col%1", table->get_column_count()).c_str());
         [realm commitWriteTransaction];
         return;
     }

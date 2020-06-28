@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2.0)
 
 if(REALM_PLATFORM STREQUAL "Android")
     # This must be before project()
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CMake/android.toolchain.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
     set(ANDROID_ABI "x86" CACHE STRING "")
     set(ANDROID_NATIVE_API_LEVEL "android-16" CACHE STRING "")
 endif()
@@ -41,8 +41,6 @@ use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFI
 if(REALM_ENABLE_SYNC)
   add_definitions(-DREALM_ENABLE_SYNC)
 endif()
-
-set(PEGTL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/pegtl)
 
 add_subdirectory(src)
 add_subdirectory(tests)

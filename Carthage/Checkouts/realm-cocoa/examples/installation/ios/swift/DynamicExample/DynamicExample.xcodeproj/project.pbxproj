@@ -45,8 +45,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C07E5D861B15083F00ED625C /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = "../../../realm-swift-latest/ios/swift-3.2.3/Realm.framework"; sourceTree = "<group>"; };
-		E8AD59E51AFAB62100E79784 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = "../../../realm-swift-latest/ios/swift-3.2.3/RealmSwift.framework"; sourceTree = "<group>"; };
+		C07E5D861B15083F00ED625C /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Realm.framework; path = "../../../realm-swift-latest/ios/swift-11.3/Realm.framework"; sourceTree = "<group>"; };
+		E8AD59E51AFAB62100E79784 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = "../../../realm-swift-latest/ios/swift-11.3/RealmSwift.framework"; sourceTree = "<group>"; };
 		E8E060BB1AFAB5EB00484DEE /* DynamicExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DynamicExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8E060BF1AFAB5EB00484DEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E8E060C01AFAB5EB00484DEE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -82,11 +82,11 @@
 		E8E060B21AFAB5EB00484DEE = {
 			isa = PBXGroup;
 			children = (
-				C07E5D861B15083F00ED625C /* Realm.framework */,
-				E8AD59E51AFAB62100E79784 /* RealmSwift.framework */,
 				E8E060BD1AFAB5EB00484DEE /* DynamicExample */,
 				E8E060D31AFAB5EB00484DEE /* DynamicExampleTests */,
 				E8E060BC1AFAB5EB00484DEE /* Products */,
+				C07E5D861B15083F00ED625C /* Realm.framework */,
+				E8AD59E51AFAB62100E79784 /* RealmSwift.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,12 +102,12 @@
 		E8E060BD1AFAB5EB00484DEE /* DynamicExample */ = {
 			isa = PBXGroup;
 			children = (
+				E8E060BE1AFAB5EB00484DEE /* Supporting Files */,
 				E8E060C01AFAB5EB00484DEE /* AppDelegate.swift */,
-				E8E060C21AFAB5EB00484DEE /* ViewController.swift */,
-				E8E060C41AFAB5EB00484DEE /* Main.storyboard */,
 				E8E060C71AFAB5EB00484DEE /* Images.xcassets */,
 				E8E060C91AFAB5EB00484DEE /* LaunchScreen.xib */,
-				E8E060BE1AFAB5EB00484DEE /* Supporting Files */,
+				E8E060C41AFAB5EB00484DEE /* Main.storyboard */,
+				E8E060C21AFAB5EB00484DEE /* ViewController.swift */,
 			);
 			path = DynamicExample;
 			sourceTree = "<group>";
@@ -123,8 +123,8 @@
 		E8E060D31AFAB5EB00484DEE /* DynamicExampleTests */ = {
 			isa = PBXGroup;
 			children = (
-				E8E060D61AFAB5EB00484DEE /* DynamicExampleTests.swift */,
 				E8E060D41AFAB5EB00484DEE /* Supporting Files */,
+				E8E060D61AFAB5EB00484DEE /* DynamicExampleTests.swift */,
 			);
 			path = DynamicExampleTests;
 			sourceTree = "<group>";
@@ -222,9 +222,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8E060C61AFAB5EB00484DEE /* Main.storyboard in Resources */,
-				E8E060CB1AFAB5EB00484DEE /* LaunchScreen.xib in Resources */,
 				E8E060C81AFAB5EB00484DEE /* Images.xcassets in Resources */,
+				E8E060CB1AFAB5EB00484DEE /* LaunchScreen.xib in Resources */,
+				E8E060C61AFAB5EB00484DEE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,8 +260,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8E060C31AFAB5EB00484DEE /* ViewController.swift in Sources */,
 				E8E060C11AFAB5EB00484DEE /* AppDelegate.swift in Sources */,
+				E8E060C31AFAB5EB00484DEE /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,7 +335,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				FRAMEWORK_SEARCH_PATHS = "../../../realm-swift-latest/ios/swift-3.2.3";
+				FRAMEWORK_SEARCH_PATHS = "../../../realm-swift-latest/ios/swift-11.3";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -391,7 +391,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "../../../realm-swift-latest/ios/swift-3.2.3";
+				FRAMEWORK_SEARCH_PATHS = "../../../realm-swift-latest/ios/swift-11.3";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

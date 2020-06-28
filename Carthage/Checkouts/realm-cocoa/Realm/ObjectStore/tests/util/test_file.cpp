@@ -18,6 +18,8 @@
 
 #include "util/test_file.hpp"
 
+#include "test_utils.hpp"
+
 #include "impl/realm_coordinator.hpp"
 
 #if REALM_ENABLE_SYNC
@@ -27,6 +29,7 @@
 #include "schema.hpp"
 #endif
 
+#include <realm/db.hpp>
 #include <realm/disable_sync_to_disk.hpp>
 #include <realm/history.hpp>
 #include <realm/string_data.hpp>
@@ -80,7 +83,17 @@ TestFile::TestFile()
 
 TestFile::~TestFile()
 {
-    unlink(path.c_str());
+    if (!m_persist)
+        unlink(path.c_str());
+}
+
+DBOptions TestFile::options() const
+{
+    DBOptions options;
+    options.durability = in_memory
+                       ? DBOptions::Durability::MemOnly
+                       : DBOptions::Durability::Full;
+    return options;
 }
 
 InMemoryTestFile::InMemoryTestFile()
@@ -121,7 +134,11 @@ SyncTestFile::SyncTestFile(SyncServer& server, std::string name, bool is_partial
     schema_mode = SchemaMode::Additive;
 }
 
-sync::Server::Config TestLogger::server_config() {
+SyncServer::SyncServer(StartImmediately start_immediately, std::string local_dir)
+: m_local_root_dir(local_dir.empty() ? util::make_temp_dir() : local_dir)
+, m_server(m_local_root_dir, util::none, ([&] {
+    using namespace std::literals::chrono_literals;
+
     sync::Server::Config config;
 #if TEST_ENABLE_SYNC_LOGGING
     auto logger = new util::StderrLogger;
@@ -130,11 +147,16 @@ sync::Server::Config TestLogger::server_config() {
 #else
     config.logger = new TestLogger;
 #endif
-    return config;
-}
+    m_logger.reset(config.logger);
+    config.history_compaction_clock = this;
+    config.disable_history_compaction = false;
+    config.history_ttl = 1s;
+    config.history_compaction_interval = 1s;
+    config.state_realm_dir = util::make_temp_dir();
+    config.listen_address = "127.0.0.1";
 
-SyncServer::SyncServer(StartImmediately start_immediately)
-: m_server(util::make_temp_dir(), util::none, TestLogger::server_config())
+    return config;
+})())
 {
 #if TEST_ENABLE_SYNC_LOGGING
     SyncManager::shared().set_log_level(util::Logger::Level::all);
@@ -142,20 +164,8 @@ SyncServer::SyncServer(StartImmediately start_immediately)
     SyncManager::shared().set_log_level(util::Logger::Level::off);
 #endif
 
-    uint64_t port;
-    while (true) {
-        // Try to pick a random available port, or loop forever if other
-        // problems occur because there's no specific error for "port in use"
-        try {
-            port = fastrand(65536 - 1000) + 1000;
-            m_server.start("127.0.0.1", util::to_string(port));
-            break;
-        }
-        catch (std::runtime_error const&) {
-            continue;
-        }
-    }
-    m_url = util::format("realm://127.0.0.1:%1", port);
+    m_server.start();
+    m_url = util::format("realm://127.0.0.1:%1", m_server.listen_endpoint().port());
     if (start_immediately)
         start();
 }
@@ -184,7 +194,7 @@ std::string SyncServer::url_for_realm(StringData realm_name) const
     return util::format("%1/%2", m_url, realm_name);
 }
 
-static void wait_for_session(Realm& realm, bool (SyncSession::*fn)(std::function<void(std::error_code)>))
+static void wait_for_session(Realm& realm, void (SyncSession::*fn)(std::function<void(std::error_code)>))
 {
     std::condition_variable cv;
     std::mutex wait_mutex;
@@ -209,6 +219,28 @@ void wait_for_download(Realm& realm)
     wait_for_session(realm, &SyncSession::wait_for_download_completion);
 }
 
+TestSyncManager::TestSyncManager(std::string const& base_path, SyncManager::MetadataMode mode)
+{
+    configure(base_path, mode);
+}
+
+TestSyncManager::~TestSyncManager()
+{
+    SyncManager::shared().reset_for_testing();
+}
+
+void TestSyncManager::configure(std::string const& base_path, SyncManager::MetadataMode mode)
+{
+    SyncClientConfig config;
+    config.base_file_path = base_path.empty() ? tmp_dir() : base_path;
+    config.metadata_mode = mode;
+#if TEST_ENABLE_SYNC_LOGGING
+    config.log_level = util::Logger::Level::all;
+#else
+    config.log_level = util::Logger::Level::off;
+#endif
+    SyncManager::shared().configure(config);
+}
 
 #endif // REALM_ENABLE_SYNC
 
@@ -271,17 +303,27 @@ private:
     std::map<_impl::RealmCoordinator*, std::weak_ptr<_impl::RealmCoordinator>> m_published_coordinators;
 } s_worker;
 
-void advance_and_notify(Realm& realm)
+void on_change_but_no_notify(Realm& realm)
 {
     s_worker.on_change(_impl::RealmCoordinator::get_existing_coordinator(realm.config().path));
+}
+
+void advance_and_notify(Realm& realm)
+{
+    on_change_but_no_notify(realm);
     realm.notify();
 }
 
 #else // REALM_HAVE_CLANG_FEATURE(thread_sanitizer)
 
+void on_change_but_no_notify(Realm& realm)
+{
+    _impl::RealmCoordinator::get_coordinator(realm.config().path)->on_change();
+}
+
 void advance_and_notify(Realm& realm)
 {
-    _impl::RealmCoordinator::get_existing_coordinator(realm.config().path)->on_change();
+    on_change_but_no_notify(realm);
     realm.notify();
 }
 #endif

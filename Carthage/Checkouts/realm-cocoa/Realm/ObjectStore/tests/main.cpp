@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 
 #include <limits.h>
 
@@ -39,7 +39,10 @@ int main(int argc, char** argv) {
     SetCurrentDirectoryA(path);
 #else
     char executable[PATH_MAX];
-    realpath(argv[0], executable);
+    if (realpath(argv[0], executable) == NULL) {
+        fprintf(stderr, "Failed to resolve path to exectuable.\n");
+        return 1;
+    }
     const char* directory = dirname(executable);
     chdir(directory);
 #endif

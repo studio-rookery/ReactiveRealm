@@ -107,14 +107,14 @@ class RealmTests: TestCase {
         try! fileManager.setAttributes([FileAttributeKey.posixPermissions: permissions], ofItemAtPath: testRealmURL().path)
     }
 
-    #if DEBUG
+    #if !SWIFT_PACKAGE && DEBUG
     func testFileFormatUpgradeRequiredButDisabled() {
         var config = Realm.Configuration()
-        var bundledRealmPath = NSBundle(forClass: RealmTests.self).pathForResource("fileformat-pre-null.realm",
-                                                                                   ofType: nil)!
-        try! NSFileManager.defaultManager.copyItemAtPath(bundledRealmPath, toPath: config.path)
+        let bundledRealmPath = Bundle(for: RealmTests.self).path(forResource: "fileformat-pre-null.realm",
+                                                                 ofType: nil)!
+        try! FileManager.default.copyItem(atPath: bundledRealmPath, toPath: config.fileURL!.path)
         config.disableFormatUpgrade = true
-        assertFails(Error.FileFormatUpgradeRequired) {
+        assertFails(Realm.Error.fileFormatUpgradeRequired) {
             try Realm(configuration: config)
         }
     }
@@ -215,6 +215,20 @@ class RealmTests: TestCase {
         XCTAssertEqual(try! Realm().objects(SwiftStringObject.self).count, 1)
     }
 
+    func testWriteWithoutNotifying() {
+        let realm = try! Realm()
+        let token = realm.observe { _, _ in
+            XCTFail("should not have been called")
+        }
+
+        try! realm.write(withoutNotifying: [token]) {
+            realm.deleteAll()
+        }
+
+        // local realm notifications are called synchronously so no need to wait for anything
+        token.invalidate()
+    }
+
     func testDynamicWriteSubscripting() {
         try! Realm().beginWrite()
         let object = try! Realm().dynamicCreate("SwiftStringObject", value: ["1"])
@@ -233,6 +247,14 @@ class RealmTests: TestCase {
         try! Realm().beginWrite()
         try! Realm().create(SwiftStringObject.self, value: ["1"])
         XCTAssertEqual(try! Realm().objects(SwiftStringObject.self).count, 1)
+    }
+
+    func testWriteReturning() {
+        let realm = try! Realm()
+        let object = try! realm.write {
+            return realm.create(SwiftStringObject.self, value: ["1"])
+        }
+        XCTAssertEqual(object.stringCol, "1")
     }
 
     func testCommitWrite() {
@@ -738,8 +760,10 @@ class RealmTests: TestCase {
         // test that autoreresh is not applied
         // we have two notifications, one for opening the realm, and a second when performing our transaction
         let notificationFired = expectation(description: "notification fired")
-        let token = realm.observe { _, realm in
+        var token: NotificationToken!
+        token = realm.observe { _, realm in
             XCTAssertNotNil(realm, "Realm should not be nil")
+            token.invalidate()
             notificationFired.fulfill()
         }
 
@@ -748,12 +772,10 @@ class RealmTests: TestCase {
 
         dispatchSyncNewThread {
             try! Realm().write {
-                try! Realm().create(SwiftStringObject.self, value: ["string"])
-                return
+                _ = try! Realm().create(SwiftStringObject.self, value: ["string"])
             }
         }
         waitForExpectations(timeout: 1, handler: nil)
-        token.invalidate()
 
         XCTAssertEqual(results.count, Int(0), "There should be 1 object of type StringObject")
 
@@ -830,5 +852,14 @@ class RealmTests: TestCase {
         } catch {
             XCTFail("Failed to brigde RLMError to Realm.Error")
         }
+    }
+
+    func testExists() {
+        let config = Realm.Configuration()
+        XCTAssertFalse(Realm.fileExists(for: config))
+        autoreleasepool { _ = try! Realm(configuration: config) }
+        XCTAssertTrue(Realm.fileExists(for: config))
+        XCTAssertTrue(try! Realm.deleteFiles(for: config))
+        XCTAssertFalse(Realm.fileExists(for: config))
     }
 }
