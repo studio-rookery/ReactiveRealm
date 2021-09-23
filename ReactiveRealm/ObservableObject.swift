@@ -17,7 +17,7 @@ public protocol ObservableObject {
     
     var isInvalidated: Bool { get }
     
-    func observe<T: Object>(on queue: DispatchQueue?, _ block: @escaping (ObjectChange<T>) -> ()) -> NotificationTokenType
+    func observe<T>(keyPaths: [String]?, on queue: DispatchQueue?, _ block: @escaping (ObjectChange<T>) -> Void) -> NotificationTokenType where T : ObjectBase
 }
 
 extension Object: ObservableObject, ReactiveExtensionsProvider {
@@ -32,7 +32,7 @@ public extension Reactive where Base: ObservableObject {
     /// When the realm notifies an error or the object is deleted, it ends with the error.
     var propertyChanges: SignalProducer<(Base, [PropertyChange]), RealmObjectError> {
         return SignalProducer<(Base, [PropertyChange]), RealmObjectError> { observer, lifetime in
-            let token = self.base.observe(on: nil) { change in
+            let token = self.base.observe(keyPaths: nil, on: nil) { change in
                 switch change {
                 case .change(let object, let changes):
                     observer.send(value: (object as! Base, changes))
