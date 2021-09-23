@@ -24,11 +24,9 @@ final class MockObservableObject: ReactiveRealm.ObservableObject, ReactiveExtens
     
     private var block: ((ObjectChange<Object>) -> ())?
     
-    func observe<T>(on queue: DispatchQueue? = nil, _ block: @escaping (ObjectChange<T>) -> ()) -> MockToken where T : Object {
-//        self.block = block as (ObjectChange<Object>) -> ()
+    func observe<T>(keyPaths: [String]?, on queue: DispatchQueue?, _ block: @escaping (ObjectChange<T>) -> Void) -> MockToken where T : ObjectBase {
         return token
     }
-    
     
     func sendChange() {
 //        block?(Object(), .change([]))

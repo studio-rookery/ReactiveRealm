@@ -246,6 +246,10 @@
     XCTAssertEqualObjects(array.array.firstObject, obj1, @"Objects should be equal");
     XCTAssertEqualObjects(array.array.lastObject, obj3, @"Objects should be equal");
     XCTAssertEqualObjects([array.array objectAtIndex:1], obj2, @"Objects should be equal");
+    NSMutableIndexSet *indexSet = [NSMutableIndexSet new];
+    [indexSet addIndex:0];
+    [indexSet addIndex:2];
+    XCTAssertEqualObjects([array.array objectsAtIndexes:indexSet], (@[obj1, obj3]), @"Objects should be equal");
 
     [realm beginWriteTransaction];
     [realm addObject:array];
@@ -254,6 +258,9 @@
     XCTAssertEqual(array.array.count, 3U, @"Should have two elements in array");
     XCTAssertEqualObjects([array.array[0] stringCol], @"a", @"First element should have property value 'a'");
     XCTAssertEqualObjects([array.array[1] stringCol], @"b", @"Second element should have property value 'b'");
+    NSArray<StringObject *> *objectsAtIndexes = [array.array objectsAtIndexes:indexSet];
+    XCTAssertEqualObjects([objectsAtIndexes[0] stringCol], @"a", @"First element should have property value 'a'");
+    XCTAssertEqualObjects([objectsAtIndexes[1] stringCol], @"c", @"Second element should have property value 'c'");
 
     [realm beginWriteTransaction];
     [array.array replaceObjectAtIndex:0 withObject:obj3];
@@ -287,6 +294,49 @@
     __unused ArrayPropertyObject *obj = [[ArrayPropertyObject alloc] initWithValue:@[@"n", @[], @[[[IntObject alloc] initWithValue:@[@1]]]]];
 }
 
+- (void)testUnmanagedComparision {
+    RLMRealm *realm = [self realmWithTestPath];
+
+    ArrayPropertyObject *array = [[ArrayPropertyObject alloc] init];
+    ArrayPropertyObject *array2 = [[ArrayPropertyObject alloc] init];
+
+    array.name = @"name";
+    array2.name = @"name2";
+    XCTAssertNotNil(array.array, @"RLMArray property should get created on access");
+    XCTAssertNotNil(array2.array, @"RLMArray property should get created on access");
+    XCTAssertTrue([array.array isEqual:array2.array], @"Empty arrays should be equal");
+
+    XCTAssertNil(array.array.firstObject, @"No objects added yet");
+    XCTAssertNil(array2.array.lastObject, @"No objects added yet");
+
+    StringObject *obj1 = [[StringObject alloc] init];
+    obj1.stringCol = @"a";
+    StringObject *obj2 = [[StringObject alloc] init];
+    obj2.stringCol = @"b";
+    StringObject *obj3 = [[StringObject alloc] init];
+    obj3.stringCol = @"c";
+    [array.array addObject:obj1];
+    [array.array addObject:obj2];
+    [array.array addObject:obj3];
+
+    [array2.array addObject:obj1];
+    [array2.array addObject:obj2];
+    [array2.array addObject:obj3];
+
+    XCTAssertTrue([array.array isEqual:array2.array], @"Arrays should be equal");
+    [array2.array removeLastObject];
+    XCTAssertFalse([array.array isEqual:array2.array], @"Arrays should not be equal");
+    [array2.array addObject:obj3];
+    XCTAssertTrue([array.array isEqual:array2.array], @"Arrays should be equal");
+
+    [realm beginWriteTransaction];
+    [realm addObject:array];
+    [realm commitWriteTransaction];
+
+    XCTAssertFalse([array.array isEqual:array2.array], @"Comparing a managed array to an unmanaged one should fail");
+    XCTAssertFalse([array2.array isEqual:array.array], @"Comparing a managed array to an unmanaged one should fail");
+}
+
 - (void)testUnmanagedPrimitive {
     AllPrimitiveArrays *obj = [[AllPrimitiveArrays alloc] init];
     XCTAssertTrue([obj.intObj isKindOfClass:[RLMArray class]]);
@@ -296,7 +346,8 @@
     XCTAssertTrue([obj.stringObj isKindOfClass:[RLMArray class]]);
     XCTAssertTrue([obj.dataObj isKindOfClass:[RLMArray class]]);
     XCTAssertTrue([obj.dateObj isKindOfClass:[RLMArray class]]);
-
+    XCTAssertTrue([obj.uuidObj isKindOfClass:[RLMArray class]]);
+    
     [obj.intObj addObject:@1];
     XCTAssertEqualObjects(obj.intObj[0], @1);
     XCTAssertThrows([obj.intObj addObject:@""]);
@@ -312,7 +363,8 @@
     XCTAssertTrue([obj.stringObj isKindOfClass:[RLMArray class]]);
     XCTAssertTrue([obj.dataObj isKindOfClass:[RLMArray class]]);
     XCTAssertTrue([obj.dateObj isKindOfClass:[RLMArray class]]);
-
+    XCTAssertTrue([obj.uuidObj isKindOfClass:[RLMArray class]]);
+    
     [obj.intObj addObject:@5];
     XCTAssertEqualObjects(obj.intObj.firstObject, @5);
     [realm cancelWriteTransaction];
@@ -871,8 +923,8 @@
     EmployeeObject *e2 = [PrimaryEmployeeObject createInRealm:realm withValue:@{@"name": @"B", @"age": @30, @"hired": @NO}];
     EmployeeObject *e3 = [PrimaryEmployeeObject createInRealm:realm withValue:@{@"name": @"C", @"age": @40, @"hired": @YES}];
     EmployeeObject *e4 = [PrimaryEmployeeObject createInRealm:realm withValue:@{@"name": @"D", @"age": @50, @"hired": @YES}];
-    PrimaryCompanyObject *c1 = [PrimaryCompanyObject createInRealm:realm withValue:@{@"name": @"ABC AG", @"employees": @[e1, e2, e3, e2]}];
-    PrimaryCompanyObject *c2 = [PrimaryCompanyObject createInRealm:realm withValue:@{@"name": @"ABC AG 2", @"employees": @[e1, e4]}];
+    PrimaryCompanyObject *c1 = [PrimaryCompanyObject createInRealm:realm withValue:@{@"name": @"ABC AG", @"employees": @[e1, e2, e3, e2], @"employeeSet": @[]}];
+    PrimaryCompanyObject *c2 = [PrimaryCompanyObject createInRealm:realm withValue:@{@"name": @"ABC AG 2", @"employees": @[e1, e4], @"employeeSet": @[]}];
 
     ArrayOfPrimaryCompanies *companies = [ArrayOfPrimaryCompanies createInRealm:realm withValue:@[@[c1, c2]]];
     [realm commitWriteTransaction];
@@ -993,7 +1045,7 @@
 - (void)testSortByRenamedColumns {
     RLMRealm *realm = [RLMRealm defaultRealm];
     [realm beginWriteTransaction];
-    id value = @{@"array": @[@[@1, @"c"], @[@2, @"b"], @[@3, @"a"]]};
+    id value = @{@"array": @[@[@1, @"c"], @[@2, @"b"], @[@3, @"a"]], @"set": @[]};
     LinkToRenamedProperties1 *obj = [LinkToRenamedProperties1 createInRealm:realm withValue:value];
 
     // FIXME: sorting has to use the column names because the parsing is done by
@@ -1365,7 +1417,7 @@ static RLMArray<IntObject *> *managedTestArray() {
         RLMAssertThrowsWithReasonMatching(array[0] = io, @"thread");
         RLMAssertThrowsWithReasonMatching([array valueForKey:@"intCol"], @"thread");
         RLMAssertThrowsWithReasonMatching([array setValue:@1 forKey:@"intCol"], @"thread");
-        RLMAssertThrowsWithReasonMatching({for (__unused id obj in array);}, @"thread");
+        RLMAssertThrowsWithReasonMatching(({for (__unused id obj in array);}), @"thread");
     }];
     [realm cancelWriteTransaction];
 }
@@ -1408,7 +1460,7 @@ static RLMArray<IntObject *> *managedTestArray() {
     XCTAssertNoThrow(array[0] = io);
     XCTAssertNoThrow([array valueForKey:@"intCol"]);
     XCTAssertNoThrow([array setValue:@1 forKey:@"intCol"]);
-    XCTAssertNoThrow({for (__unused id obj in array);});
+    XCTAssertNoThrow(({for (__unused id obj in array);}));
 
     [realm cancelWriteTransaction];
     [realm invalidate];
@@ -1445,7 +1497,7 @@ static RLMArray<IntObject *> *managedTestArray() {
     RLMAssertThrowsWithReasonMatching(array[0] = io, @"invalidated");
     RLMAssertThrowsWithReasonMatching([array valueForKey:@"intCol"], @"invalidated");
     RLMAssertThrowsWithReasonMatching([array setValue:@1 forKey:@"intCol"], @"invalidated");
-    RLMAssertThrowsWithReasonMatching({for (__unused id obj in array);}, @"invalidated");
+    RLMAssertThrowsWithReasonMatching(({for (__unused id obj in array);}), @"invalidated");
 
     [realm cancelWriteTransaction];
 }
@@ -1472,7 +1524,7 @@ static RLMArray<IntObject *> *managedTestArray() {
     XCTAssertNoThrow([array sortedResultsUsingDescriptors:@[[RLMSortDescriptor sortDescriptorWithKeyPath:@"intCol" ascending:YES]]]);
     XCTAssertNoThrow(array[0]);
     XCTAssertNoThrow([array valueForKey:@"intCol"]);
-    XCTAssertNoThrow({for (__unused id obj in array);});
+    XCTAssertNoThrow(({for (__unused id obj in array);}));
 
 
     RLMAssertThrowsWithReasonMatching([array addObject:io], @"write transaction");

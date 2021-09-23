@@ -200,6 +200,51 @@ class SignalSpec: QuickSpec {
 			}
 		}
 
+		describe("reentrantUnserialized") {
+			#if arch(x86_64) && canImport(Darwin)
+			it("should not crash") {
+				let (signal, observer) = Signal<Int, Never>.reentrantUnserializedPipe()
+				var values: [Int] = []
+
+				signal
+					.take(first: 5)
+					.map { $0 + 1 }
+					.on { values.append($0) }
+					.observeValues(observer.send(value:))
+
+				expect {
+					observer.send(value: 1)
+				}.toNot(throwAssertion())
+
+				expect(values) == [2, 3, 4, 5, 6]
+			}
+			#endif
+
+			it("should drain enqueued values in submission order after the observer callout has completed") {
+				let (signal, observer) = Signal<Int, Never>.reentrantUnserializedPipe()
+				var values: [Int] = []
+
+				signal
+					.take(first: 1)
+					.observeValues { _ in
+						observer.send(value: 10)
+						observer.send(value: 100)
+				}
+
+				signal
+					.take(first: 1)
+					.observeValues { _ in
+						observer.send(value: 20)
+						observer.send(value: 200)
+				}
+
+				signal.observeValues { values.append($0) }
+
+				observer.send(value: 0)
+				expect(values) == [0, 10, 100, 20, 200]
+			}
+		}
+
 		describe("Signal.pipe") {
 			it("should forward events to observers") {
 				let (signal, observer) = Signal<Int, Never>.pipe()
@@ -357,7 +402,7 @@ class SignalSpec: QuickSpec {
 				group.wait()
 
 				expect(executionCounter.value) == iterations * 2
-				expect(counter.value).toEventually(equal(iterations), timeout: 5)
+				expect(counter.value).toEventually(equal(iterations), timeout: .seconds(5))
 			}
 		}
 
@@ -3896,11 +3941,11 @@ class SignalSpec: QuickSpec {
 				observer3.sendCompleted()
 			}
 			
-			it("should emit false when all signals in array emits false") {
+			it("should emit false when all signals emits false") {
 				let (signal1, observer1) = Signal<Bool, Never>.pipe()
 				let (signal2, observer2) = Signal<Bool, Never>.pipe()
 				let (signal3, observer3) = Signal<Bool, Never>.pipe()
-				Signal.any([signal1, signal2, signal3]).observeValues { value in
+				Signal.any(signal1, signal2, signal3).observeValues { value in
 					expect(value).to(beFalse())
 				}
 				observer1.send(value: false)

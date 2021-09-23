@@ -229,7 +229,7 @@ class SchedulerSpec: QuickSpec {
 					expect(count) == 0
 					
 					scheduler.queue.resume()
-					expect(count).toEventually(equal(timesToIncrement), pollInterval: 0.1)
+					expect(count).toEventually(equal(timesToIncrement), pollInterval: .milliseconds(100))
 				}
 				
 				it("should cancel repeatedly run actions on disposal") {
@@ -354,6 +354,15 @@ class SchedulerSpec: QuickSpec {
 				scheduler.run()
 				expect(scheduler.currentDate) == Date.distantFuture
 				expect(string) == "fuzzbuzzfoobar"
+			}
+
+			it("should advance by DispatchTimeInterval same as by TimeInterval") {
+				let schedulerB = TestScheduler(startDate: startDate)
+
+				scheduler.advance(by: .milliseconds(300))
+				schedulerB.advance(by: 0.3)
+
+				expect(scheduler.currentDate).to(equal(schedulerB.currentDate))
 			}
 		}
 	}

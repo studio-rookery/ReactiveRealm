@@ -19,7 +19,10 @@
 import XCTest
 import Realm
 import Realm.Private
+
+#if canImport(RealmTestSupport)
 import RealmTestSupport
+#endif
 
 #if os(macOS)
 
@@ -43,6 +46,20 @@ class SwiftRLMLinkedNonDefaultObject: RLMObject {
 
 class SwiftRLMNonDefaultArrayObject: RLMObject {
     @objc dynamic var array = RLMArray<SwiftRLMNonDefaultObject>(objectClassName: SwiftRLMNonDefaultObject.className())
+    public override class func shouldIncludeInDefaultSchema() -> Bool {
+        return false
+    }
+}
+
+class SwiftRLMNonDefaultSetObject: RLMObject {
+    @objc dynamic var set = RLMSet<SwiftRLMNonDefaultObject>(objectClassName: SwiftRLMNonDefaultObject.className())
+    public override class func shouldIncludeInDefaultSchema() -> Bool {
+        return false
+    }
+}
+
+class SwiftRLMNonDefaultDictionaryObject: RLMObject {
+    @objc dynamic var dictionary = RLMDictionary<NSString, SwiftRLMNonDefaultObject>(objectClassName: SwiftRLMNonDefaultObject.className(), keyType: .string)
     public override class func shouldIncludeInDefaultSchema() -> Bool {
         return false
     }
@@ -88,22 +105,31 @@ class InvalidArrayType: FakeObject {
     @objc dynamic var array = RLMArray<SwiftRLMIntObject>(objectClassName: "invalid class")
 }
 
+class InvalidSetType: FakeObject {
+    @objc dynamic var set = RLMSet<SwiftRLMIntObject>(objectClassName: "invalid class")
+}
+
+class InvalidDictionaryType: FakeObject {
+    @objc dynamic var dictionary = RLMDictionary<NSString, SwiftRLMIntObject>(objectClassName: "invalid class", keyType: .string)
+}
+
 class InitAppendsToArrayProperty : RLMObject {
-    @objc dynamic var propertyWithIllegalDefaultValue: RLMArray<InitAppendsToArrayValue> = {
+    @objc dynamic var propertyWithIllegalDefaultValue: RLMArray<InitAppendsToArrayProperty> = {
         if mayAppend {
-            let array = RLMArray<InitAppendsToArrayValue>(objectClassName: InitAppendsToArrayValue.className())
-            array.add(InitAppendsToArrayValue())
+            mayAppend = false
+            let array = RLMArray<InitAppendsToArrayProperty>(objectClassName: InitAppendsToArrayProperty.className())
+            array.add(InitAppendsToArrayProperty())
             return array
         } else {
-            return RLMArray<InitAppendsToArrayValue>(objectClassName: InitAppendsToArrayValue.className())
+            return RLMArray<InitAppendsToArrayProperty>(objectClassName: InitAppendsToArrayProperty.className())
         }
     }()
 
     static var mayAppend = false
 }
 
-class InitAppendsToArrayValue : RLMObject {
-    @objc dynamic var value: Int = 0
+class NoProps: FakeObject {
+    // no @objc properties
 }
 
 class SwiftRLMSchemaTests: RLMMultiProcessTestCase {
@@ -111,6 +137,11 @@ class SwiftRLMSchemaTests: RLMMultiProcessTestCase {
         if isParent {
             XCTAssertEqual(0, runChildAndWait(), "Tests in child process failed")
         }
+    }
+
+    func testShouldRaiseObjectWithoutProperties() {
+        assertThrowsWithReasonMatching(RLMObjectSchema(forObjectClass: NoProps.self),
+                                       "No properties are defined for 'NoProps'. Did you remember to mark them with '@objc' in your model?")
     }
 
     func testSchemaInitWithLinkedToObjectUsingInitWithValue() {
@@ -158,6 +189,7 @@ class SwiftRLMSchemaTests: RLMMultiProcessTestCase {
         // Objects not in default schema
         _ = SwiftRLMLinkedNonDefaultObject(value: [[1]])
         _ = SwiftRLMNonDefaultArrayObject(value: [[[1]]])
+        _ = SwiftRLMNonDefaultSetObject(value: [[[1]]])
         _ = SwiftRLMMutualLink1Object(value: [[[:]]])
     }
 
@@ -206,7 +238,8 @@ class SwiftRLMSchemaTests: RLMMultiProcessTestCase {
         // This is different from the above tests in that it is a to-many link
         // and it only occurs while the schema is initializing
         InitAppendsToArrayProperty.mayAppend = true
-        assertThrowsWithReasonMatching(RLMSchema.shared(), ".*unless the schema is initialized.*")
+        assertThrowsWithReasonMatching(RLMSchema.shared(),
+                                       ".*Object cannot be inserted unless the schema is initialized.*")
     }
 
     func testInvalidObjectTypeForRLMArray() {

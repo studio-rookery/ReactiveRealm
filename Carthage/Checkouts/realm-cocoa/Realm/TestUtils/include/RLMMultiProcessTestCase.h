@@ -18,7 +18,7 @@
 
 #import "RLMTestCase.h"
 
-@class NSTask;
+@class NSTask, RLMChildProcessEnvironment;
 
 @interface RLMMultiProcessTestCase : RLMTestCase
 // if true, this is running the main test process
@@ -27,9 +27,16 @@
 // spawn a child process running the current test and wait for it complete
 // returns the return code of the process
 - (int)runChildAndWait;
+- (int)runChildAndWaitWithAppIds:(NSArray *)appIds;
+- (int)runChildAndWaitWithEnvironment:(RLMChildProcessEnvironment *)environment;
 
 - (NSTask *)childTask;
+- (NSTask *)childTaskWithAppIds:(NSArray *)appIds;
+
 @end
 
 #define RLMRunChildAndWait() \
     XCTAssertEqual(0, [self runChildAndWait], @"Tests in child process failed")
+
+#define RLMRunChildAndWaitWithAppIds(...) \
+    XCTAssertEqual(0, [self runChildAndWaitWithAppIds:@[__VA_ARGS__]], @"Tests in child process failed")

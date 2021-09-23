@@ -48,6 +48,12 @@
 @implementation BinaryObject
 @end
 
+@implementation DecimalObject
+@end
+
+@implementation MixedObject
+@end
+
 @implementation UTF8Object
 @end
 
@@ -75,20 +81,71 @@
 }
 @end
 
-#pragma mark AllTypesObject
+@implementation EmbeddedIntObject
+@end
 
-@implementation AllTypesObject
-+ (NSDictionary *)linkingObjectsProperties
-{
-    return @{ @"linkingObjectsCol": [RLMPropertyDescriptor descriptorWithClass:LinkToAllTypesObject.class propertyName:@"allTypesCol"] };
-}
-+ (NSArray *)requiredProperties
-{
-    return @[@"stringCol", @"dateCol", @"binaryCol"];
+@implementation EmbeddedIntParentObject
++ (NSString *)primaryKey {
+    return @"pk";
 }
 @end
 
+@implementation UuidObject
+@end
+
+#pragma mark AllTypesObject
+
+@implementation AllTypesObject
++ (NSDictionary *)linkingObjectsProperties {
+    return @{@"linkingObjectsCol": [RLMPropertyDescriptor descriptorWithClass:LinkToAllTypesObject.class propertyName:@"allTypesCol"]};
+}
+
++ (NSArray *)requiredProperties {
+    return @[@"stringCol", @"dateCol", @"binaryCol", @"decimalCol", @"objectIdCol", @"uuidCol"];
+}
+
++ (NSDictionary *)values:(int)i stringObject:(StringObject *)so {
+    char str[] = "a";
+    str[0] += i - 1;
+    return @{
+        @"boolCol": @(i % 2),
+        @"cBoolCol": @(i % 2),
+        @"intCol": @(i),
+        @"floatCol": @(1.1f * i),
+        @"doubleCol": @(1.11 * i),
+        @"stringCol": @(str),
+        @"binaryCol": [@(str) dataUsingEncoding:NSUTF8StringEncoding],
+        @"dateCol": [NSDate dateWithTimeIntervalSince1970:i],
+        @"longCol": @((long long)i * INT_MAX + 1),
+        @"decimalCol": [[RLMDecimal128 alloc] initWithNumber:@(i)],
+        @"objectIdCol": [RLMObjectId objectId],
+        @"objectCol": so ?: NSNull.null,
+        @"uuidCol": i < 4 ? @[[[NSUUID alloc] initWithUUIDString:@"85d4fbee-6ec6-47df-bfa1-615931903d7e"],
+                              [[NSUUID alloc] initWithUUIDString:@"00000000-0000-0000-0000-000000000000"],
+                              [[NSUUID alloc] initWithUUIDString:@"137DECC8-B300-4954-A233-F89909F4FD89"],
+                              [[NSUUID alloc] initWithUUIDString:@"b84e8912-a7c2-41cd-8385-86d200d7b31e"]][i] :
+            [[NSUUID alloc] initWithUUIDString:@"b9d325b0-3058-4838-8473-8f1aaae410db"],
+        @"anyCol": @(i+1)
+    };
+}
+
++ (NSDictionary *)values:(int)i stringObject:(StringObject *)so mixedObject:(MixedObject *)mo {
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self values:i stringObject:so]];
+    dict[@"mixedObjectCol"] = mo ?: NSNull.null;
+    return dict;
+}
+@end
+
+@implementation AllPrimitiveRLMValues
+@end
+
 @implementation ArrayOfAllTypesObject
+@end
+
+@implementation DictionaryOfAllTypesObject
+@end
+
+@implementation SetOfAllTypesObject
 @end
 
 @implementation LinkToAllTypesObject
@@ -98,10 +155,39 @@
 @end
 @implementation AllPrimitiveArrays
 + (NSArray *)requiredProperties {
-    return @[@"intObj", @"floatObj", @"doubleObj", @"boolObj", @"stringObj", @"dateObj", @"dataObj"];
+    return @[@"intObj", @"floatObj", @"doubleObj", @"boolObj", @"stringObj",
+             @"dateObj", @"dataObj", @"decimalObj", @"objectIdObj", @"uuidObj"];
 }
 @end
+
+@implementation AllPrimitiveSets
++ (NSArray *)requiredProperties {
+    return @[@"intObj", @"floatObj", @"doubleObj", @"boolObj", @"stringObj",
+             @"dateObj", @"dataObj", @"decimalObj", @"objectIdObj", @"uuidObj",
+             @"intObj2", @"floatObj2", @"doubleObj2", @"boolObj2", @"stringObj2",
+             @"dateObj2", @"dataObj2", @"decimalObj2", @"objectIdObj2", @"uuidObj2"];
+}
+@end
+
 @implementation AllOptionalPrimitiveArrays
+@end
+
+@implementation AllDictionariesObject
+@end
+
+@implementation AllOptionalPrimitiveSets
+@end
+
+@implementation AllPrimitiveDictionaries
++ (NSArray *)requiredProperties {
+    return @[@"intObj", @"floatObj", @"doubleObj", @"boolObj", @"stringObj",
+             @"dateObj", @"dataObj", @"decimalObj", @"objectIdObj", @"uuidObj",
+             @"intObj2", @"floatObj2", @"doubleObj2", @"boolObj2", @"stringObj2",
+             @"dateObj2", @"dataObj2", @"decimalObj2", @"objectIdObj2", @"uuidObj2"];
+}
+@end
+
+@implementation AllOptionalPrimitiveDictionaries
 @end
 
 @implementation AllOptionalTypesPK
@@ -142,6 +228,9 @@
 @end
 
 @implementation ArrayOfPrimaryCompanies
+@end
+
+@implementation SetOfPrimaryCompanies
 @end
 
 #pragma mark LinkToCompanyObject
@@ -194,9 +283,29 @@
 @implementation CircleArrayObject
 @end
 
+#pragma mark CircleSetObject
+
+@implementation CircleSetObject
+@end
+
+#pragma mark CircleDictionaryObject
+
+@implementation CircleDictionaryObject
+@end
+
 #pragma mark ArrayPropertyObject
 
 @implementation ArrayPropertyObject
+@end
+
+#pragma mark SetPropertyObject
+
+@implementation SetPropertyObject
+@end
+
+#pragma mark DictionaryPropertyObject
+
+@implementation DictionaryPropertyObject
 @end
 
 #pragma mark DynamicTestObject
@@ -209,6 +318,10 @@
 @implementation AggregateObject
 @end
 @implementation AggregateArrayObject
+@end
+@implementation AggregateSetObject
+@end
+@implementation AggregateDictionaryObject
 @end
 
 #pragma mark PrimaryStringObject
@@ -262,6 +375,16 @@
 #pragma mark IntegerArrayPropertyObject
 
 @implementation IntegerArrayPropertyObject
+@end
+
+#pragma mark IntegerSetPropertyObject
+
+@implementation IntegerSetPropertyObject
+@end
+
+#pragma mark IntegerDictionaryPropertyObject
+
+@implementation IntegerDictionaryPropertyObject
 @end
 
 @implementation NumberObject
@@ -383,6 +506,10 @@
 #pragma mark FakeObject
 
 @implementation FakeObject
++ (bool)_realmIgnoreClass { return true; }
+@end
+
+@implementation FakeEmbeddedObject
 + (bool)_realmIgnoreClass { return true; }
 @end
 

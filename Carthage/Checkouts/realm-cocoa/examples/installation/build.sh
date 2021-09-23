@@ -29,6 +29,9 @@ command:
   test-osx-swift-dynamic:          tests macOS Swift dynamic example.
   test-osx-swift-xcframework:      tests macOS Swift xcframework example.
   test-osx-swift-cocoapods:        tests macOS Swift CocoaPods example.
+  test-catalyst-objc-cocoapods:    tests Mac Catalyst Objective-C CocoaPods example.
+  test-catalyst-objc-cocoapods-dynamic:   tests Mac Catalyst Objective-C CocoaPods example.
+  test-catalyst-swift-cocoapods:   tests Mac Catalyst Swift CocoaPods example.
   test-osx-swift-carthage:         tests macOS Swift Carthage example.
   test-osx-spm:                    tests macOS Swift Package Manager example.
 
@@ -40,9 +43,6 @@ command:
   test-watchos-swift-xcframework:  tests watchOS Swift xcframework example.
   test-watchos-swift-cocoapods:    tests watchOS Swift CocoaPods example.
   test-watchos-swift-carthage:     tests watchOS Swift Carthage example.
-  test-watchos-spm:                tests watchOS Swift Package Manager example.
-
-  test-tvos-spm:                   tests tvOS Swift Package Manager example.
 EOF
 }
 
@@ -74,7 +74,7 @@ xctest() {
     if [[ ! -d "$DIRECTORY" ]]; then
         DIRECTORY="${DIRECTORY/swift/swift-$REALM_SWIFT_VERSION}"
     fi
-    if [[ $PLATFORM != osx ]]; then
+    if [[ $PLATFORM != osx ]] && [[ $PLATFORM != catalyst ]]; then
         if [[ $NAME == Carthage* ]]; then
             # Building for Carthage requires that a simulator exist but not any
             # particular one, and having more than one makes xcodebuild
@@ -106,7 +106,7 @@ xctest() {
         )
     elif [[ $NAME == SwiftPackageManager* ]]; then
         if [ -n "$sha" ]; then
-            sed -i '' 's@branch = "master"@branch = "'"$sha"'"@' "$DIRECTORY/$NAME.xcodeproj/project.pbxproj"
+            ex '+%s@branch = "master"@branch = "'"$sha"'"@' -scwq "$DIRECTORY/$NAME.xcodeproj/project.pbxproj"
         fi
     elif [[ $LANG == swift* ]]; then
         download_zip_if_needed swift
@@ -120,6 +120,8 @@ xctest() {
         destination=(-destination "id=$simulator_id")
     elif [[ $PLATFORM == watchos ]]; then
         destination=(-sdk watchsimulator)
+    elif [[ $PLATFORM == catalyst ]]; then
+        destination=(-destination 'platform=macOS,variant=Mac Catalyst')
     fi
 
     local project=(-project "$DIRECTORY/$NAME.xcodeproj")
@@ -131,7 +133,9 @@ xctest() {
     local scheme=(-scheme "$NAME")
 
     # Ensure that dynamic framework tests try to use the correct version of the prebuilt libraries.
-    sed -i '' 's@/swift-[0-9.]*@/swift-'"${REALM_XCODE_VERSION}"'@' "$DIRECTORY/$NAME.xcodeproj/project.pbxproj"
+    if grep '/realm-swift-latest' "$DIRECTORY/$NAME.xcodeproj/project.pbxproj"; then
+        ex '+%s@/realm-swift-latest@/realm-swift-latest/'"${REALM_XCODE_VERSION}"'@' -scwq "$DIRECTORY/$NAME.xcodeproj/project.pbxproj"
+    fi
 
     xcodebuild "${project[@]}" "${scheme[@]}" clean build "${destination[@]}" "${code_signing_flags[@]}"
     if [[ $PLATFORM != watchos ]]; then
@@ -139,13 +143,7 @@ xctest() {
     fi
 
     if [[ $PLATFORM != osx ]]; then
-        [[ $PLATFORM == 'ios' ]] && SDK=iphoneos || SDK=$PLATFORM
-        if [ -d "$workspace" ]; then
-            [[ $LANG == 'swift' ]] && scheme=(-scheme RealmSwift) || scheme=(-scheme Realm)
-        else
-            scheme=()
-        fi
-        xcodebuild "${project[@]}" "${scheme[@]}" -sdk "$SDK" build "${code_signing_flags[@]}"
+        xcodebuild "${project[@]}" "${scheme[@]}" archive "${code_signing_flags[@]}"
     fi
 }
 
@@ -164,14 +162,12 @@ LANGUAGE=$(echo "$COMMAND" | cut -d - -f 3)
 
 case "$COMMAND" in
     "test-all")
-        for target in ios-swift-dynamic ios-swift-cocoapods osx-swift-dynamic ios-swift-carthage osx-swift-carthage; do
+        for target in ios-swift-dynamic ios-swift-cocoapods catalyst-swift-cocoapods osx-swift-dynamic ios-swift-carthage osx-swift-carthage; do
             ./build.sh test-$target || exit 1
         done
-        if (( $(xcode_version_major) >= 11 )); then
-            for target in ios osx watchos tvos; do
-                ./build.sh test-$target-spm || exit 1
-            done
-        fi
+        for target in ios osx; do
+            ./build.sh test-$target-spm || exit 1
+        done
         ;;
 
     test-*-*-cocoapods)
@@ -199,6 +195,13 @@ case "$COMMAND" in
         ;;
 
     test-ios-spm)
+        # We have to "hide" the spm example from carthage because otherwise
+        # it'll fetch the example's package dependencies as part of deciding
+        # what to build from this repo.
+        if ! [ -L ios/swift/SwiftPackageManagerExample/SwiftPackageManagerExample.xcodeproj/project.pbxproj ]; then
+            mkdir -p ios/swift/SwiftPackageManagerExample/SwiftPackageManagerExample.xcodeproj
+            ln -s ../project.pbxproj ios/swift/SwiftPackageManagerExample/SwiftPackageManagerExample.xcodeproj
+        fi
         xctest "$PLATFORM" swift SwiftPackageManagerExample
         ;;
 
