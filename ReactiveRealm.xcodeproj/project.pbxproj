@@ -12,9 +12,6 @@
 		C928339621E5EA7D00BE56AC /* ObeservableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339521E5EA7D00BE56AC /* ObeservableCollection.swift */; };
 		C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339721E5ECB700BE56AC /* ResultsTests.swift */; };
 		C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */; };
-		C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338B21E5E96500BE56AC /* ReactiveSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338E21E5E96500BE56AC /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C928338C21E5E96500BE56AC /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C92833A721E5EE6A00BE56AC /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A621E5EE6A00BE56AC /* Person.swift */; };
 		C92833A921E5EE9400BE56AC /* Dog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833A821E5EE9300BE56AC /* Dog.swift */; };
 		C92833AB21E5F7F600BE56AC /* NotificationTokenProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */; };
@@ -57,9 +54,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				C92833A121E5EDBA00BE56AC /* ReactiveSwift.framework in CopyFiles */,
-				C92833A221E5EDBA00BE56AC /* Realm.framework in CopyFiles */,
-				C92833A321E5EDBA00BE56AC /* RealmSwift.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +292,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1010;
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1250;
 				ORGANIZATIONNAME = ReactiveRealm;
 				TargetAttributes = {
 					C928336E21E5D4E200BE56AC = {
@@ -316,6 +310,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = C928336521E5D4E200BE56AC;
 			productRefGroup = C928337021E5D4E200BE56AC /* Products */;
@@ -417,6 +412,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -443,7 +439,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -481,6 +477,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -501,7 +498,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
