@@ -82,9 +82,10 @@
 @end
 
 @class CycleObject;
-RLM_ARRAY_TYPE(CycleObject)
+RLM_COLLECTION_TYPE(CycleObject)
 @interface CycleObject : RLMObject
 @property RLM_GENERIC_ARRAY(CycleObject) *objects;
+@property RLM_GENERIC_SET(CycleObject) *objectSet;
 @end
 
 @implementation CycleObject
@@ -103,6 +104,7 @@ RLM_ARRAY_TYPE(CycleObject)
 @property PrimaryStringObjectWrapper *primaryStringObjectWrapper;
 @property StringObject *stringObject;
 @property RLM_GENERIC_ARRAY(PrimaryIntObject) *primaryIntArray;
+@property RLM_GENERIC_SET(PrimaryIntObject) *primaryIntSet;
 @property NSString *stringCol;
 @end
 
@@ -268,6 +270,8 @@ RLM_ARRAY_TYPE(CycleObject)
     NSData *bin2 = [[NSData alloc] initWithBytes:bin length:sizeof bin];
     NSDate *timeNow = [NSDate dateWithTimeIntervalSince1970:1000000];
     NSDate *timeZero = [NSDate dateWithTimeIntervalSince1970:0];
+    RLMObjectId *objectId1 = [RLMObjectId objectId];
+    RLMObjectId *objectId2 = [RLMObjectId objectId];
 
     AllTypesObject *c = [[AllTypesObject alloc] init];
 
@@ -280,13 +284,16 @@ RLM_ARRAY_TYPE(CycleObject)
     c.dateCol = timeZero;
     c.cBoolCol = false;
     c.longCol = 99;
+    c.decimalCol = [RLMDecimal128 decimalWithNumber:@1];
+    c.objectIdCol = objectId1;
     c.objectCol = [[StringObject alloc] init];
     c.objectCol.stringCol = @"c";
-
+    c.uuidCol = [[NSUUID alloc] initWithUUIDString:@"137DECC8-B300-4954-A233-F89909F4FD89"];
     [realm addObject:c];
 
     [AllTypesObject createInRealm:realm withValue:@[@YES, @506, @7.7f, @8.8, @"banach", bin2,
-                                                     timeNow, @YES, @(-20), NSNull.null]];
+                                                    timeNow, @YES, @(-20), [RLMDecimal128 decimalWithNumber:@2],
+                                                    objectId2, [[NSUUID alloc] initWithUUIDString:@"137DECC8-B300-4954-A233-F89909F4FD89"], NSNull.null]];
     [realm commitWriteTransaction];
 
     AllTypesObject *row1 = [AllTypesObject allObjects][0];
@@ -310,8 +317,14 @@ RLM_ARRAY_TYPE(CycleObject)
     XCTAssertEqual(row2.cBoolCol, true,                 @"row2.cBoolCol");
     XCTAssertEqual(row1.longCol, 99L,                   @"row1.IntCol");
     XCTAssertEqual(row2.longCol, -20L,                  @"row2.IntCol");
+    XCTAssertEqualObjects(row1.decimalCol, [RLMDecimal128 decimalWithNumber:@1]);
+    XCTAssertEqualObjects(row2.decimalCol, [RLMDecimal128 decimalWithNumber:@2]);
+    XCTAssertEqualObjects(row1.objectIdCol, objectId1);
+    XCTAssertEqualObjects(row2.objectIdCol, objectId2);
     XCTAssertTrue([row1.objectCol.stringCol isEqual:@"c"], @"row1.objectCol");
     XCTAssertNil(row2.objectCol,                        @"row2.objectCol");
+    XCTAssertTrue([row1.uuidCol.UUIDString isEqualToString: @"137DECC8-B300-4954-A233-F89909F4FD89"], @"row1.uuidCol");
+    XCTAssertTrue([row2.uuidCol.UUIDString isEqualToString: @"137DECC8-B300-4954-A233-F89909F4FD89"], @"row2.uuidCol");
 
     [realm transactionWithBlock:^{
         row1.boolCol = NO;
@@ -325,11 +338,13 @@ RLM_ARRAY_TYPE(CycleObject)
     AllTypesObject *o = [[AllTypesObject alloc] initWithValue:row1];
     o.floatCol = NAN;
     o.doubleCol = NAN;
+    o.decimalCol = [RLMDecimal128 decimalWithNumber:[NSDecimalNumber notANumber]];
     [realm transactionWithBlock:^{
         [realm addObject:o];
     }];
     XCTAssertTrue(isnan(o.floatCol));
     XCTAssertTrue(isnan(o.doubleCol));
+    XCTAssertTrue(o.decimalCol.isNaN);
 }
 
 - (void)testObjectSubclass {
@@ -756,31 +771,21 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
 - (void)testCreateInRealmValidationForDictionary {
     RLMRealm *realm = [RLMRealm defaultRealm];
 
-    const char bin[4] = { 0, 1, 2, 3 };
-    NSData *bin1 = [[NSData alloc] initWithBytes:bin length:sizeof bin / 2];
-    NSDate *timeNow = [NSDate dateWithTimeIntervalSince1970:1000000];
-    NSDictionary * const dictValidAllTypes = @{@"boolCol"   : @NO,
-                                               @"intCol"    : @54,
-                                               @"floatCol"  : @0.7f,
-                                               @"doubleCol": @0.8,
-                                               @"stringCol": @"foo",
-                                               @"binaryCol": bin1,
-                                               @"dateCol"   : timeNow,
-                                               @"cBoolCol"  : @NO,
-                                               @"longCol"   : @(99),
-                                               @"objectCol": NSNull.null};
-
+    NSDictionary *dictValidAllTypes = [AllTypesObject values:0 stringObject:nil mixedObject: nil];
     [realm beginWriteTransaction];
 
-    // Test NSDictonary
     XCTAssertNoThrow(([AllTypesObject createInRealm:realm withValue:dictValidAllTypes]),
                      @"Creating object with valid value types should not throw exception");
 
-    for (NSString *keyToInvalidate in dictValidAllTypes.allKeys) {
+    for (NSString *keyToInvalidate in dictValidAllTypes) {
         NSMutableDictionary *invalidInput = [dictValidAllTypes mutableCopy];
         id obj = @"invalid";
         if ([keyToInvalidate isEqualToString:@"stringCol"]) {
             obj = @1;
+        }
+
+        if ([keyToInvalidate isEqualToString:@"anyCol"]) {
+            obj = self;
         }
 
         invalidInput[keyToInvalidate] = obj;
@@ -788,7 +793,6 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
         RLMAssertThrowsWithReasonMatching([AllTypesObject createInRealm:realm withValue:invalidInput],
                                           @"Invalid value '.*'");
     }
-
 
     [realm commitWriteTransaction];
 }
@@ -804,7 +808,11 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     const char bin[4] = { 0, 1, 2, 3 };
     NSData *bin1 = [[NSData alloc] initWithBytes:bin length:sizeof bin / 2];
     NSDate *timeNow = [NSDate dateWithTimeIntervalSince1970:1000000];
-    NSArray *const arrayValidAllTypes = @[@NO, @54, @0.7f, @0.8, @"foo", bin1, timeNow, @NO, @(99), to];
+    NSArray *const arrayValidAllTypes = @[@NO, @54, @0.7f, @0.8, @"foo", bin1,
+                                          timeNow, @NO, @(99),
+                                          [RLMDecimal128 decimalWithNumber:@2],
+                                          [RLMObjectId objectId],
+                                          [[NSUUID alloc] init], to];
 
     [realm beginWriteTransaction];
 
@@ -851,7 +859,7 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
 
     [realm beginWriteTransaction];
     PrimaryEmployeeObject *eo = [PrimaryEmployeeObject createInRealm:realm withValue:@[@"Samuel", @19, @NO]];
-    PrimaryCompanyObject *co = [PrimaryCompanyObject createInRealm:realm withValue:@[@"Realm", @[eo], eo, @[eo]]];
+    PrimaryCompanyObject *co = [PrimaryCompanyObject createInRealm:realm withValue:@[@"Realm", @[eo], @[eo], @{ @"key": eo }, eo, @[eo]]];
     [realm commitWriteTransaction];
 
     [realm beginWriteTransaction];
@@ -871,6 +879,7 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     [PrimaryCompanyObject createOrUpdateInRealm:realm withValue:@{
                                                                    @"name": @"Realm",
                                                                    @"employees": @[@{@"name":@"Samuel", @"hired":@NO}],
+                                                                   @"employeeSet": @[@{@"name":@"Samuel", @"hired":@NO}],
                                                                    @"intern": @{@"name":@"Samuel", @"age":@20},
                                                                    }];
     [realm commitWriteTransaction];
@@ -980,6 +989,7 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     [RLMRealm.defaultRealm transactionWithBlock:^{
         [RLMRealm.defaultRealm addObject:obj];
         [obj.objects addObject:obj];
+        [obj.objectSet addObject:obj];
     }];
     XCTAssertNoThrow(obj.description);
 }
@@ -1110,6 +1120,40 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     XCTAssertNil(obj1.realm, @"Realm should be nil after deletion");
 }
 
+#pragma mark - Invalidated
+
+- (void)testIsInvalidated {
+    RLMRealm *realm = [RLMRealm defaultRealm];
+
+    StringObject *obj1 = [[StringObject alloc] initWithValue:@[@"a"]];
+    XCTAssertEqual(obj1.isInvalidated, NO);
+    [realm transactionWithBlock:^{
+        [realm addObject:obj1];
+    }];
+    XCTAssertEqual(obj1.isInvalidated, NO);
+    [realm transactionWithBlock:^{
+        [realm deleteObject:obj1];
+    }];
+    XCTAssertEqual(obj1.isInvalidated, YES);
+}
+
+- (void)testInvalidatedWithCustomObjectClasses {
+    RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
+    config.objectClasses = @[[StringObject class]];
+    RLMRealm *realm = [RLMRealm realmWithConfiguration:config error:nil];
+
+    StringObject *obj1 = [[StringObject alloc] initWithValue:@[@"a"]];
+    XCTAssertEqual(obj1.isInvalidated, NO);
+    [realm transactionWithBlock:^{
+        [realm addObject:obj1];
+    }];
+    XCTAssertEqual(obj1.isInvalidated, NO);
+    [realm transactionWithBlock:^{
+        [realm deleteObject:obj1];
+    }];
+    XCTAssertEqual(obj1.isInvalidated, YES);
+}
+
 #pragma mark - Primary Keys
 
 - (void)testPrimaryKey {
@@ -1172,7 +1216,7 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     RLMRealm *realm = [RLMRealm defaultRealm];
     [realm beginWriteTransaction];
 
-    [PrimaryNestedObject createOrUpdateInDefaultRealmWithValue:@[@0, @[@"string", @1], @[@[@"string", @1]], @[@"string"], @[@[@1]], @""]];
+    [PrimaryNestedObject createOrUpdateInDefaultRealmWithValue:@[@0, @[@"string", @1], @[@[@"string", @1]], @[@"string"], @[@[@1]], @[@[@1]], @""]];
     XCTAssertEqual([[PrimaryNestedObject allObjects] count], 1U, @"Should have 1 object");
     XCTAssertEqual([[PrimaryStringObject allObjects] count], 1U, @"Should have 1 object");
     XCTAssertEqual([[PrimaryIntObject allObjects] count], 1U, @"Should have 1 object");
@@ -1187,28 +1231,31 @@ static void addProperty(Class cls, const char *name, const char *type, size_t si
     XCTAssertEqual([PrimaryStringObject.allObjects.lastObject intCol], 2, @"intCol should be 2");
     XCTAssertEqualObjects([PrimaryNestedObject.allObjects.lastObject stringCol], @"", @"stringCol should not have been updated");
     XCTAssertEqual(1U, [PrimaryNestedObject.allObjects.lastObject primaryIntArray].count, @"intArray should not have been overwritten");
+    XCTAssertEqual(1U, [PrimaryNestedObject.allObjects.lastObject primaryIntSet].count, @"intSet should not have been overwritten");
     XCTAssertEqual([[StringObject allObjects] count], 2U, @"Should have 2 objects");
 
     // test partial update nulling out object/array properties
     [PrimaryNestedObject createOrUpdateInDefaultRealmWithValue:@{@"primaryCol": @0,
                                                                   @"stringCol": @"updated",
                                                                   @"stringObject": NSNull.null,
-                                                                  @"primaryIntArray": NSNull.null}];
+                                                                  @"primaryIntArray": NSNull.null,
+                                                                  @"primaryIntSet": NSNull.null}];
     PrimaryNestedObject *obj = PrimaryNestedObject.allObjects.lastObject;
     XCTAssertEqual(2, obj.primaryStringObject.intCol, @"primaryStringObject should not have changed");
     XCTAssertEqualObjects(obj.stringCol, @"updated", @"stringCol should have been updated");
     XCTAssertEqual(0U, obj.primaryIntArray.count, @"intArray should not have been emptied");
+    XCTAssertEqual(0U, obj.primaryIntSet.count, @"intSet should not have been emptied");
     XCTAssertNil(obj.stringObject, @"stringObject should be nil");
 
     // inserting new object should update nested
-    obj = [PrimaryNestedObject createOrUpdateInDefaultRealmWithValue:@[@1, @[@"string", @3], @[@[@"string", @3]], @[@"string"], @[], @""]];
+    obj = [PrimaryNestedObject createOrUpdateInDefaultRealmWithValue:@[@1, @[@"string", @3], @[@[@"string", @3]], @[@"string"], @[], @[], @""]];
     XCTAssertEqual([[PrimaryNestedObject allObjects] count], 2U, @"Should have 2 objects");
     XCTAssertEqual([[PrimaryStringObject allObjects] count], 1U, @"Should have 1 object");
     XCTAssertEqual([(PrimaryStringObject *)[[PrimaryStringObject allObjects] lastObject] intCol], 3, @"intCol should be 3");
 
     // test addOrUpdateObject
     obj.primaryStringObject = [PrimaryStringObject createInDefaultRealmWithValue:@[@"string2", @1]];
-    PrimaryNestedObject *obj1 = [[PrimaryNestedObject alloc] initWithValue:@[@1, @[@"string2", @4], @[@[@"string2", @4]], @[@"string"], @[@[@1], @[@2]], @""]];
+    PrimaryNestedObject *obj1 = [[PrimaryNestedObject alloc] initWithValue:@[@1, @[@"string2", @4], @[@[@"string2", @4]], @[@"string"], @[@[@1], @[@2]], @[@[@1], @[@2]], @""]];
     [realm addOrUpdateObject:obj1];
     XCTAssertEqual([[PrimaryNestedObject allObjects] count], 2U, @"Should have 2 objects");
     XCTAssertEqual([[PrimaryStringObject allObjects] count], 2U, @"Should have 2 objects");
@@ -1398,6 +1445,9 @@ static IntObject *managedObject() {
 - (void)testMutateFrozenObject {
     IntObject *obj = managedObject();
     IntObject *frozen = obj.freeze;
+
+    RLMRealm *realm = frozen.realm;
+    RLMAssertThrowsWithReason([realm beginWriteTransaction], @"Can't perform transactions on a frozen Realm");
     XCTAssertThrows(frozen.intCol = 1);
 }
 
@@ -1467,6 +1517,84 @@ static IntObject *managedObject() {
     // Frozen objects have the value of the object at the start of the transaction
     XCTAssertEqual(obj.freeze.intCol, 1);
     [realm cancelWriteTransaction];
+}
+
+- (void)testThaw {
+    IntObject *frozen = [managedObject() freeze];
+    XCTAssertTrue([frozen isFrozen]);
+
+    IntObject *live = [frozen thaw];
+    XCTAssertFalse([live isFrozen]);
+
+    RLMRealm *liveRealm = live.realm;
+    [liveRealm beginWriteTransaction];
+    live.intCol = 1;
+    [liveRealm commitWriteTransaction];
+    XCTAssertNotEqual(live.intCol, frozen.intCol);
+}
+
+- (void)testThawDeleted {
+    IntObject *obj = managedObject();
+    IntObject *frozen = [obj freeze];
+    XCTAssertTrue([frozen isFrozen]);
+
+    RLMRealm *realm = obj.realm;
+    [realm beginWriteTransaction];
+    [realm deleteObject:obj];
+    [realm commitWriteTransaction];
+    
+    IntObject *thawed = [frozen thaw];
+    XCTAssertNil(thawed, @"Thaw should return nil when object was deleted");
+}
+
+- (void)testThawPreviousVersion {
+    IntObject *obj = managedObject();
+    IntObject *frozen = [obj freeze];
+    XCTAssertTrue([frozen isFrozen]);
+    XCTAssertEqual(obj.intCol, frozen.intCol);
+    
+    RLMRealm *realm = obj.realm;
+    [realm beginWriteTransaction];
+    obj.intCol = 1;
+    [realm commitWriteTransaction];
+    XCTAssertNotEqual(obj.intCol, frozen.intCol, @"Frozen object shouldn't mutate");
+    
+    IntObject *thawed = [frozen thaw];
+    XCTAssertFalse(thawed.frozen);
+    XCTAssertEqual(thawed.intCol, obj.intCol, @"Thawed object should reflect transactions since the original reference was frozen.");
+}
+
+- (void)testThawUpdatedOnDifferentThread {
+    IntObject *obj = managedObject();
+    RLMThreadSafeReference *tsr = [RLMThreadSafeReference referenceWithThreadConfined:obj];
+
+    __block IntObject *frozen;
+    [self dispatchAsyncAndWait:^{
+        IntObject *obj = [RLMRealm.defaultRealm resolveThreadSafeReference:tsr];
+        [RLMRealm.defaultRealm beginWriteTransaction];
+        obj.intCol = 1;
+        [RLMRealm.defaultRealm commitWriteTransaction];
+        frozen = [obj freeze];
+    }];
+
+    IntObject* thawed = [frozen thaw];
+    XCTAssertEqual(thawed.intCol, 0, @"Thaw shouldn't reflect background transactions until main thread realm is refreshed");
+    [RLMRealm.defaultRealm refresh];
+    XCTAssertEqual(thawed.intCol, 1);
+}
+
+- (void)testThawCreatedOnDifferentThread {
+    XCTAssertEqual([[IntObject allObjects] count], 0);
+
+    __block IntObject *frozen;
+    [self dispatchAsyncAndWait:^{
+        IntObject *obj = managedObject();
+        frozen = [obj freeze];
+    }];
+    XCTAssertNil([frozen thaw]);
+    XCTAssertEqual([[IntObject allObjects] count], 0);
+    [RLMRealm.defaultRealm refresh];
+    XCTAssertEqual([[IntObject allObjects] count], 1);
 }
 
 @end

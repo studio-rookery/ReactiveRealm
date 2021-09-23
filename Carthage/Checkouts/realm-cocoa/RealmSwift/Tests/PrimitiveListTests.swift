@@ -35,12 +35,32 @@ struct UnmanagedObjectFactory: ObjectFactory {
 protocol ValueFactory {
     associatedtype T: RealmCollectionValue
     associatedtype W: RealmCollectionValue = T
+    associatedtype AverageType: AddableType = Double
     static func array(_ obj: SwiftListObject) -> List<T>
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<T>
     static func values() -> [T]
+    static func doubleValue(_ value: AverageType) -> Double
+    static func doubleValue(t value: T) -> Double
+    static func doubleValue(w value: W) -> Double
+}
+extension ValueFactory {
+    static func doubleValue(_ value: Double) -> Double {
+        return value
+    }
+    static func doubleValue(t value: T) -> Double {
+        return (value as! NSNumber).doubleValue
+    }
+    static func doubleValue(w value: W) -> Double {
+        return (value as! NSNumber).doubleValue
+    }
 }
 
 struct IntFactory: ValueFactory {
     static func array(_ obj: SwiftListObject) -> List<Int> {
+        return obj.int
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int> {
         return obj.int
     }
 
@@ -54,6 +74,10 @@ struct Int8Factory: ValueFactory {
         return obj.int8
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int8> {
+        return obj.int8
+    }
+
     static func values() -> [Int8] {
         return [1, 2, 3]
     }
@@ -61,6 +85,10 @@ struct Int8Factory: ValueFactory {
 
 struct Int16Factory: ValueFactory {
     static func array(_ obj: SwiftListObject) -> List<Int16> {
+        return obj.int16
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int16> {
         return obj.int16
     }
 
@@ -74,6 +102,10 @@ struct Int32Factory: ValueFactory {
         return obj.int32
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int32> {
+        return obj.int32
+    }
+
     static func values() -> [Int32] {
         return [1, 2, 3]
     }
@@ -81,6 +113,10 @@ struct Int32Factory: ValueFactory {
 
 struct Int64Factory: ValueFactory {
     static func array(_ obj: SwiftListObject) -> List<Int64> {
+        return obj.int64
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int64> {
         return obj.int64
     }
 
@@ -94,6 +130,10 @@ struct FloatFactory: ValueFactory {
         return obj.float
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Float> {
+        return obj.float
+    }
+
     static func values() -> [Float] {
         return [1.1, 2.2, 3.3]
     }
@@ -101,6 +141,10 @@ struct FloatFactory: ValueFactory {
 
 struct DoubleFactory: ValueFactory {
     static func array(_ obj: SwiftListObject) -> List<Double> {
+        return obj.double
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Double> {
         return obj.double
     }
 
@@ -114,6 +158,10 @@ struct StringFactory: ValueFactory {
         return obj.string
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<String> {
+        return obj.string
+    }
+
     static func values() -> [String] {
         return ["a", "b", "c"]
     }
@@ -121,6 +169,10 @@ struct StringFactory: ValueFactory {
 
 struct DataFactory: ValueFactory {
     static func array(_ obj: SwiftListObject) -> List<Data> {
+        return obj.data
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Data> {
         return obj.data
     }
 
@@ -134,8 +186,68 @@ struct DateFactory: ValueFactory {
         return obj.date
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Date> {
+        return obj.date
+    }
+
     static func values() -> [Date] {
         return [Date(), Date().addingTimeInterval(10), Date().addingTimeInterval(20)]
+    }
+}
+
+struct DecimalFactory: ValueFactory {
+    typealias AverageType = Decimal128
+
+    static func array(_ obj: SwiftListObject) -> List<Decimal128> {
+        return obj.decimal
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Decimal128> {
+        return obj.decimal
+    }
+
+    static func values() -> [Decimal128] {
+        return [Decimal128(number: 1), Decimal128(number: 2), Decimal128(number: 3)]
+    }
+
+    static func doubleValue(_ value: Decimal128) -> Double {
+        return value.doubleValue
+    }
+    static func doubleValue(t value: Decimal128) -> Double {
+        return value.doubleValue
+    }
+    static func doubleValue(w value: Decimal128) -> Double {
+        return value.doubleValue
+    }
+}
+
+struct ObjectIdFactory: ValueFactory {
+    static func array(_ obj: SwiftListObject) -> List<ObjectId> {
+        return obj.objectId
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<ObjectId> {
+        return obj.objectId
+    }
+
+    static private let _values = [ObjectId.generate(), ObjectId.generate(), ObjectId.generate()]
+    static func values() -> [ObjectId] {
+        return _values
+    }
+}
+
+struct UUIDFactory: ValueFactory {
+    static func array(_ obj: SwiftListObject) -> List<UUID> {
+        return obj.uuid
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<UUID> {
+        return obj.uuid
+    }
+
+    static private let _values = [UUID(), UUID(), UUID()]
+    static func values() -> [UUID] {
+        return _values
     }
 }
 
@@ -143,6 +255,10 @@ struct OptionalIntFactory: ValueFactory {
     typealias W = Int
 
     static func array(_ obj: SwiftListObject) -> List<Int?> {
+        return obj.intOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int?> {
         return obj.intOpt
     }
 
@@ -158,6 +274,10 @@ struct OptionalInt8Factory: ValueFactory {
         return obj.int8Opt
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int8?> {
+        return obj.int8Opt
+    }
+
     static func values() -> [Int8?] {
         return [nil, 1, 3]
     }
@@ -167,6 +287,10 @@ struct OptionalInt16Factory: ValueFactory {
     typealias W = Int16
 
     static func array(_ obj: SwiftListObject) -> List<Int16?> {
+        return obj.int16Opt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int16?> {
         return obj.int16Opt
     }
 
@@ -182,6 +306,10 @@ struct OptionalInt32Factory: ValueFactory {
         return obj.int32Opt
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int32?> {
+        return obj.int32Opt
+    }
+
     static func values() -> [Int32?] {
         return [nil, 1, 3]
     }
@@ -191,6 +319,10 @@ struct OptionalInt64Factory: ValueFactory {
     typealias W = Int64
 
     static func array(_ obj: SwiftListObject) -> List<Int64?> {
+        return obj.int64Opt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Int64?> {
         return obj.int64Opt
     }
 
@@ -206,6 +338,10 @@ struct OptionalFloatFactory: ValueFactory {
         return obj.floatOpt
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Float?> {
+        return obj.floatOpt
+    }
+
     static func values() -> [Float?] {
         return [nil, 1.1, 3.3]
     }
@@ -215,6 +351,10 @@ struct OptionalDoubleFactory: ValueFactory {
     typealias W = Double
 
     static func array(_ obj: SwiftListObject) -> List<Double?> {
+        return obj.doubleOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Double?> {
         return obj.doubleOpt
     }
 
@@ -230,6 +370,10 @@ struct OptionalStringFactory: ValueFactory {
         return obj.stringOpt
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<String?> {
+        return obj.stringOpt
+    }
+
     static func values() -> [String?] {
         return [nil, "a", "c"]
     }
@@ -239,6 +383,10 @@ struct OptionalDataFactory: ValueFactory {
     typealias W = Data
 
     static func array(_ obj: SwiftListObject) -> List<Data?> {
+        return obj.dataOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Data?> {
         return obj.dataOpt
     }
 
@@ -254,8 +402,71 @@ struct OptionalDateFactory: ValueFactory {
         return obj.dateOpt
     }
 
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Date?> {
+        return obj.dateOpt
+    }
+
     static func values() -> [Date?] {
         return [nil, Date(), Date().addingTimeInterval(20)]
+    }
+}
+
+struct OptionalDecimalFactory: ValueFactory {
+    typealias W = Decimal128
+    typealias AverageType = Decimal128
+
+    static func array(_ obj: SwiftListObject) -> List<Decimal128?> {
+        return obj.decimalOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<Decimal128?> {
+        return obj.decimalOpt
+    }
+
+    static func values() -> [Decimal128?] {
+        return [nil] + DecimalFactory.values().dropLast()
+    }
+
+    static func doubleValue(_ value: Decimal128) -> Double {
+        return value.doubleValue
+    }
+    static func doubleValue(t value: Decimal128?) -> Double {
+        return value!.doubleValue
+    }
+    static func doubleValue(w value: Decimal128) -> Double {
+        return value.doubleValue
+    }
+}
+
+struct OptionalObjectIdFactory: ValueFactory {
+    typealias W = ObjectId
+
+    static func array(_ obj: SwiftListObject) -> List<ObjectId?> {
+        return obj.objectIdOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<ObjectId?> {
+        return obj.objectIdOpt
+    }
+
+    static func values() -> [ObjectId?] {
+        return [nil] + ObjectIdFactory.values().dropLast()
+    }
+}
+
+struct OptionalUUIDFactory: ValueFactory {
+    typealias W = UUID
+
+    static func array(_ obj: SwiftListObject) -> List<UUID?> {
+        return obj.uuidOpt
+    }
+
+    static func mutableSet(_ obj: SwiftMutableSetObject) -> MutableSet<UUID?> {
+        return obj.uuidOpt
+    }
+
+    static func values() -> [UUID?] {
+        return [nil] + UUIDFactory.values().dropLast()
     }
 }
 
@@ -272,7 +483,8 @@ class PrimitiveListTestsBase<O: ObjectFactory, V: ValueFactory>: TestCase {
     override func setUp() {
         obj = SwiftListObject()
         if O.isManaged() {
-            let config = Realm.Configuration(inMemoryIdentifier: "test", objectTypes: [SwiftListObject.self])
+            let config = Realm.Configuration(inMemoryIdentifier: "test",
+                                             objectTypes: [SwiftListObject.self, SwiftStringObject.self])
             realm = try! Realm(configuration: config)
             realm!.beginWrite()
             realm!.add(obj)
@@ -345,6 +557,14 @@ class PrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsB
 
     }
 
+    func testObjectsAtIndexes() {
+        assertThrows(array.objects(at: [1, 2, 3]), reason: "Indexes for List are out of bounds.")
+        array.append(objectsIn: values)
+        let objs = array.objects(at: [2, 1])
+        XCTAssertEqual(values[1], objs.first) // this is broke
+        XCTAssertEqual(values[2], objs.last)
+    }
+
     func testValueForKey() {
         XCTAssertEqual(array.value(forKey: "self").count, 0)
         array.append(objectsIn: values)
@@ -360,7 +580,6 @@ class PrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsB
 
     func testFilter() {
         // not implemented
-
     }
 
     func testInsert() {
@@ -381,8 +600,8 @@ class PrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsB
         XCTAssertEqual(values[0], array[1])
         XCTAssertEqual(values[2], array[2])
 
-        assertThrows(_ = array.insert(values[0], at: 4))
-        assertThrows(_ = array.insert(values[0], at: -1))
+        assertThrows(array.insert(values[0], at: 4))
+        assertThrows(array.insert(values[0], at: -1))
     }
 
     func testRemove() {
@@ -512,7 +731,7 @@ class MinMaxPrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveList
     }
 }
 
-class OptionalMinMaxPrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: MinMaxType {
+class OptionalMinMaxPrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: MinMaxType, V.W: _DefaultConstructible {
     // V.T and V.W? are the same thing, but the type system doesn't know that
     // and the protocol constraint is on V.W
     var array2: List<V.W?> {
@@ -542,20 +761,19 @@ class AddablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveLis
         // Expressing "can be added and converted to a floating point type" as
         // a protocol requirement is awful, so sidestep it all with obj-c
         let expected = ((values.map(dynamicBridgeCast) as NSArray).value(forKeyPath: "@sum.self")! as! NSNumber).doubleValue
-        let actual: V.T = array.sum()
-        XCTAssertEqual((dynamicBridgeCast(fromSwift: actual) as! NSNumber).doubleValue, expected, accuracy: 0.01)
+        XCTAssertEqual(V.doubleValue(t: array.sum()), expected, accuracy: 0.01)
     }
 
     func testAverage() {
-        XCTAssertNil(array.average())
+        XCTAssertNil(array.average() as V.AverageType?)
         array.append(objectsIn: values)
 
         let expected = ((values.map(dynamicBridgeCast) as NSArray).value(forKeyPath: "@avg.self")! as! NSNumber).doubleValue
-        XCTAssertEqual(array.average()!, expected, accuracy: 0.01)
+        XCTAssertEqual(V.doubleValue(array.average()!), expected, accuracy: 0.01)
     }
 }
 
-class OptionalAddablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: AddableType {
+class OptionalAddablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: AddableType, V.W: _DefaultConstructible {
     // V.T and V.W? are the same thing, but the type system doesn't know that
     // and the protocol constraint is on V.W
     var array2: List<V.W?> {
@@ -572,19 +790,18 @@ class OptionalAddablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: Prim
         // Expressing "can be added and converted to a floating point type" as
         // a protocol requirement is awful, so sidestep it all with obj-c
         let expected = ((nonNil.map(dynamicBridgeCast) as NSArray).value(forKeyPath: "@sum.self")! as! NSNumber).doubleValue
-        let actual: V.W = array2.sum()
-        XCTAssertEqual((dynamicBridgeCast(fromSwift: actual) as! NSNumber).doubleValue, expected, accuracy: 0.01)
+        XCTAssertEqual(V.doubleValue(w: array2.sum()), expected, accuracy: 0.01)
     }
 
     func testAverage() {
-        XCTAssertNil(array2.average())
+        XCTAssertNil(array2.average() as Double?)
         array.append(objectsIn: values)
 
         var nonNil = values!
         nonNil.remove(at: 0)
 
         let expected = ((nonNil.map(dynamicBridgeCast) as NSArray).value(forKeyPath: "@avg.self")! as! NSNumber).doubleValue
-        XCTAssertEqual(array2.average()!, expected, accuracy: 0.01)
+        XCTAssertEqual(V.doubleValue(array2.average()!), expected, accuracy: 0.01)
     }
 }
 
@@ -600,7 +817,7 @@ class SortablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveLi
     }
 }
 
-class OptionalSortablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: Comparable {
+class OptionalSortablePrimitiveListTests<O: ObjectFactory, V: ValueFactory>: PrimitiveListTestsBase<O, V> where V.W: Comparable, V.W: _DefaultConstructible {
     func testSorted() {
         var shuffled = values!
         shuffled.removeFirst()
@@ -625,6 +842,9 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = PrimitiveListTests<OF, StringFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = PrimitiveListTests<OF, DataFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = PrimitiveListTests<OF, DateFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, DecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, ObjectIdFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, UUIDFactory>._defaultTestSuite().tests.map(suite.addTest)
 
     _ = MinMaxPrimitiveListTests<OF, IntFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = MinMaxPrimitiveListTests<OF, Int8Factory>._defaultTestSuite().tests.map(suite.addTest)
@@ -634,6 +854,7 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = MinMaxPrimitiveListTests<OF, FloatFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = MinMaxPrimitiveListTests<OF, DoubleFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = MinMaxPrimitiveListTests<OF, DateFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = MinMaxPrimitiveListTests<OF, DecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
 
     _ = AddablePrimitiveListTests<OF, IntFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = AddablePrimitiveListTests<OF, Int8Factory>._defaultTestSuite().tests.map(suite.addTest)
@@ -642,6 +863,7 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = AddablePrimitiveListTests<OF, Int64Factory>._defaultTestSuite().tests.map(suite.addTest)
     _ = AddablePrimitiveListTests<OF, FloatFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = AddablePrimitiveListTests<OF, DoubleFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = AddablePrimitiveListTests<OF, DecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
 
     _ = PrimitiveListTests<OF, OptionalIntFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = PrimitiveListTests<OF, OptionalInt8Factory>._defaultTestSuite().tests.map(suite.addTest)
@@ -653,6 +875,9 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = PrimitiveListTests<OF, OptionalStringFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = PrimitiveListTests<OF, OptionalDataFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = PrimitiveListTests<OF, OptionalDateFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, OptionalDecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, OptionalObjectIdFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = PrimitiveListTests<OF, OptionalUUIDFactory>._defaultTestSuite().tests.map(suite.addTest)
 
     _ = OptionalMinMaxPrimitiveListTests<OF, OptionalIntFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalMinMaxPrimitiveListTests<OF, OptionalInt8Factory>._defaultTestSuite().tests.map(suite.addTest)
@@ -662,6 +887,7 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = OptionalMinMaxPrimitiveListTests<OF, OptionalFloatFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalMinMaxPrimitiveListTests<OF, OptionalDoubleFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalMinMaxPrimitiveListTests<OF, OptionalDateFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = OptionalMinMaxPrimitiveListTests<OF, OptionalDecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
 
     _ = OptionalAddablePrimitiveListTests<OF, OptionalIntFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalAddablePrimitiveListTests<OF, OptionalInt8Factory>._defaultTestSuite().tests.map(suite.addTest)
@@ -670,6 +896,7 @@ func addTests<OF: ObjectFactory>(_ suite: XCTestSuite, _ type: OF.Type) {
     _ = OptionalAddablePrimitiveListTests<OF, OptionalInt64Factory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalAddablePrimitiveListTests<OF, OptionalFloatFactory>._defaultTestSuite().tests.map(suite.addTest)
     _ = OptionalAddablePrimitiveListTests<OF, OptionalDoubleFactory>._defaultTestSuite().tests.map(suite.addTest)
+    _ = OptionalAddablePrimitiveListTests<OF, OptionalDecimalFactory>._defaultTestSuite().tests.map(suite.addTest)
 }
 
 class UnmanagedPrimitiveListTests: TestCase {

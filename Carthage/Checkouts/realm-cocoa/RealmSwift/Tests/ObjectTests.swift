@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import XCTest
+import Realm
 import RealmSwift
 import Foundation
 
@@ -38,10 +39,9 @@ class SwiftDynamicDefaultObject: Object {
     }
 }
 
+@available(*, deprecated) // Silence deprecation warnings for RealmOptional
 class ObjectTests: TestCase {
-
     // init() Tests are in ObjectCreationTests.swift
-
     // init(value:) tests are in ObjectCreationTests.swift
 
     func testRealm() {
@@ -72,7 +72,9 @@ class ObjectTests: TestCase {
         XCTAssert(schema.properties as AnyObject is [Property])
         XCTAssertEqual(schema.className, "SwiftObject")
         XCTAssertEqual(schema.properties.map { $0.name },
-            ["boolCol", "intCol", "intEnumCol", "floatCol", "doubleCol", "stringCol", "binaryCol", "dateCol", "objectCol", "arrayCol"]
+                       ["boolCol", "intCol", "int8Col", "int16Col", "int32Col", "int64Col", "intEnumCol", "floatCol", "doubleCol",
+                        "stringCol", "binaryCol", "dateCol", "decimalCol",
+                        "objectIdCol", "objectCol", "uuidCol", "anyCol", "arrayCol", "setCol", "mapCol"]
         )
     }
 
@@ -95,6 +97,14 @@ class ObjectTests: TestCase {
         XCTAssertEqual(type(of: object).sharedSchema(), SwiftObject.sharedSchema())
     }
 
+    func testBaseClassesDoNotHaveSharedSchema() {
+        XCTAssertNil(ObjectBase.sharedSchema())
+        XCTAssertNil(Object.sharedSchema())
+        XCTAssertNil(EmbeddedObject.sharedSchema())
+        XCTAssertNil(RLMObject.sharedSchema())
+        XCTAssertNil(RLMEmbeddedObject.sharedSchema())
+    }
+
     func testInvalidated() {
         let object = SwiftObject()
         XCTAssertFalse(object.isInvalidated)
@@ -112,24 +122,46 @@ class ObjectTests: TestCase {
         XCTAssertTrue(object.isInvalidated)
     }
 
+    func testInvalidatedWithCustomObjectClasses() {
+        var config = Realm.Configuration.defaultConfiguration
+        config.objectTypes = [SwiftObject.self, SwiftBoolObject.self]
+        let realm = try! Realm(configuration: config)
+
+        let object = SwiftObject()
+        XCTAssertFalse(object.isInvalidated)
+
+        try! realm.write {
+            realm.add(object)
+            XCTAssertFalse(object.isInvalidated)
+        }
+
+        try! realm.write {
+            realm.deleteAll()
+            XCTAssertTrue(object.isInvalidated)
+        }
+        XCTAssertTrue(object.isInvalidated)
+    }
+
     func testDescription() {
         let object = SwiftObject()
+
         // swiftlint:disable line_length
-        assertMatches(object.description, "SwiftObject \\{\n\tboolCol = 0;\n\tintCol = 123;\n\tintEnumCol = 1;\n\tfloatCol = 1\\.23;\n\tdoubleCol = 12\\.3;\n\tstringCol = a;\n\tbinaryCol = <.*61.*>;\n\tdateCol = 1970-01-01 00:00:01 \\+0000;\n\tobjectCol = SwiftBoolObject \\{\n\t\tboolCol = 0;\n\t\\};\n\tarrayCol = List<SwiftBoolObject> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
+        assertMatches(object.description, "SwiftObject \\{\n\tboolCol = 0;\n\tintCol = 123;\n\tint8Col = 123;\n\tint16Col = 123;\n\tint32Col = 123;\n\tint64Col = 123;\n\tintEnumCol = 1;\n\tfloatCol = 1\\.23;\n\tdoubleCol = 12\\.3;\n\tstringCol = a;\n\tbinaryCol = <.*61.*>;\n\tdateCol = 1970-01-01 00:00:01 \\+0000;\n\tdecimalCol = 1.23E6;\n\tobjectIdCol = 1234567890ab1234567890ab;\n\tobjectCol = SwiftBoolObject \\{\n\t\tboolCol = 0;\n\t\\};\n\tuuidCol = 137DECC8-B300-4954-A233-F89909F4FD89;\n\tanyCol = \\(null\\);\n\tarrayCol = List<SwiftBoolObject> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\tsetCol = MutableSet<SwiftBoolObject> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\tmapCol = Map<string, SwiftBoolObject> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
 
         let recursiveObject = SwiftRecursiveObject()
         recursiveObject.objects.append(recursiveObject)
-        assertMatches(recursiveObject.description, "SwiftRecursiveObject \\{\n\tobjects = List<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\tobjects = List<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\t\t\tobjects = <Maximum depth exceeded>;\n\t\t\t\t\\}\n\t\t\t\\);\n\t\t\\}\n\t\\);\n\\}")
+        recursiveObject.objectSet.insert(recursiveObject)
+        assertMatches(recursiveObject.description, "SwiftRecursiveObject \\{\n\tobjects = List<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\tobjects = List<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\t\t\tobjects = <Maximum depth exceeded>;\n\t\t\t\t\tobjectSet = <Maximum depth exceeded>;\n\t\t\t\t\\}\n\t\t\t\\);\n\t\t\tobjectSet = MutableSet<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\t\t\tobjects = <Maximum depth exceeded>;\n\t\t\t\t\tobjectSet = <Maximum depth exceeded>;\n\t\t\t\t\\}\n\t\t\t\\);\n\t\t\\}\n\t\\);\n\tobjectSet = MutableSet<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\tobjects = List<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\t\t\tobjects = <Maximum depth exceeded>;\n\t\t\t\t\tobjectSet = <Maximum depth exceeded>;\n\t\t\t\t\\}\n\t\t\t\\);\n\t\t\tobjectSet = MutableSet<SwiftRecursiveObject> <0x[0-9a-f]+> \\(\n\t\t\t\t\\[0\\] SwiftRecursiveObject \\{\n\t\t\t\t\tobjects = <Maximum depth exceeded>;\n\t\t\t\t\tobjectSet = <Maximum depth exceeded>;\n\t\t\t\t\\}\n\t\t\t\\);\n\t\t\\}\n\t\\);\n\\}")
 
         let renamedObject = LinkToSwiftRenamedProperties1()
         renamedObject.linkA = SwiftRenamedProperties1()
-        assertMatches(renamedObject.description, "LinkToSwiftRenamedProperties1 \\{\n\tlinkA = SwiftRenamedProperties1 \\{\n\t\tpropA = 0;\n\t\tpropB = ;\n\t\\};\n\tlinkB = \\(null\\);\n\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
+        assertMatches(renamedObject.description, "LinkToSwiftRenamedProperties1 \\{\n\tlinkA = SwiftRenamedProperties1 \\{\n\t\tpropA = 0;\n\t\tpropB = ;\n\t\\};\n\tlinkB = \\(null\\);\n\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\tset1 = MutableSet<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
         assertMatches(renamedObject.linkA!.linking1.description, "LinkingObjects<LinkToSwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\n\\)")
 
         let realm = try! Realm()
         try! realm.write { realm.add(renamedObject) }
-        assertMatches(renamedObject.description, "LinkToSwiftRenamedProperties1 \\{\n\tlinkA = SwiftRenamedProperties1 \\{\n\t\tpropA = 0;\n\t\tpropB = ;\n\t\\};\n\tlinkB = \\(null\\);\n\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
-        assertMatches(renamedObject.linkA!.linking1.description, "LinkingObjects<LinkToSwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\\[0\\] LinkToSwiftRenamedProperties1 \\{\n\t\tlinkA = SwiftRenamedProperties1 \\{\n\t\t\tpropA = 0;\n\t\t\tpropB = ;\n\t\t\\};\n\t\tlinkB = \\(null\\);\n\t\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\t\n\t\t\\);\n\t\\}\n\\)")
+        assertMatches(renamedObject.description, "LinkToSwiftRenamedProperties1 \\{\n\tlinkA = SwiftRenamedProperties1 \\{\n\t\tpropA = 0;\n\t\tpropB = ;\n\t\\};\n\tlinkB = \\(null\\);\n\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\tset1 = MutableSet<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\n\t\\);\n\\}")
+        assertMatches(renamedObject.linkA!.linking1.description, "LinkingObjects<LinkToSwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\\[0\\] LinkToSwiftRenamedProperties1 \\{\n\t\tlinkA = SwiftRenamedProperties1 \\{\n\t\t\tpropA = 0;\n\t\t\tpropB = ;\n\t\t\\};\n\t\tlinkB = \\(null\\);\n\t\tarray1 = List<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\t\n\t\t\\);\n\t\tset1 = MutableSet<SwiftRenamedProperties1> <0x[0-9a-f]+> \\(\n\t\t\n\t\t\\);\n\t\\}\n\\)")
         // swiftlint:enable line_length
     }
 
@@ -139,6 +171,8 @@ class ObjectTests: TestCase {
         XCTAssertNil(SwiftStringObject().objectSchema.primaryKeyProperty)
         XCTAssertEqual(SwiftPrimaryStringObject.primaryKey()!, "stringCol")
         XCTAssertEqual(SwiftPrimaryStringObject().objectSchema.primaryKeyProperty!.name, "stringCol")
+        XCTAssertEqual(SwiftPrimaryUUIDObject().objectSchema.primaryKeyProperty!.name, "uuidCol")
+        XCTAssertEqual(SwiftPrimaryObjectIdObject().objectSchema.primaryKeyProperty!.name, "objectIdCol")
     }
 
     func testCannotUpdatePrimaryKey() {
@@ -160,6 +194,16 @@ class ObjectTests: TestCase {
         stringObj.stringCol = "b" // can change primary key unattached
         XCTAssertEqual("b", stringObj.stringCol)
 
+        let uuidObj = SwiftPrimaryUUIDObject()
+        uuidObj.uuidCol = UUID(uuidString: "8a12daba-8b23-11eb-8dcd-0242ac130003")!
+        uuidObj.uuidCol = UUID(uuidString: "85d4fbee-6ec6-47df-bfa1-615931903d7e")!
+        XCTAssertEqual(UUID(uuidString: "85d4fbee-6ec6-47df-bfa1-615931903d7e")!, uuidObj.uuidCol)
+
+        let objectIdObj = SwiftPrimaryObjectIdObject()
+        objectIdObj.objectIdCol = ObjectId("1234567890ab1234567890aa")
+        objectIdObj.objectIdCol = ObjectId("1234567890ab1234567890ab")
+        XCTAssertEqual(ObjectId("1234567890ab1234567890ab"), objectIdObj.objectIdCol)
+
         try! realm.write {
             realm.add(intObj)
             assertThrows(intObj.intCol = 2, reasonMatching: primaryKeyReason)
@@ -175,6 +219,16 @@ class ObjectTests: TestCase {
             assertThrows(stringObj.stringCol = "c", reasonMatching: primaryKeyReason)
             assertThrows(stringObj["stringCol"] = "c", reasonMatching: primaryKeyReason)
             assertThrows(stringObj.setValue("c", forKey: "stringCol"), reasonMatching: primaryKeyReason)
+
+            realm.add(uuidObj)
+            assertThrows(uuidObj.uuidCol = UUID(uuidString: "4ee1fa48-8b23-11eb-8dcd-0242ac130003")!, reasonMatching: primaryKeyReason)
+            assertThrows(uuidObj["uuidCol"] = UUID(uuidString: "4ee1fa48-8b23-11eb-8dcd-0242ac130003")!, reasonMatching: primaryKeyReason)
+            assertThrows(uuidObj.setValue(UUID(uuidString: "4ee1fa48-8b23-11eb-8dcd-0242ac130003")!, forKey: "uuidCol"), reasonMatching: primaryKeyReason)
+
+            realm.add(objectIdObj)
+            assertThrows(objectIdObj.objectIdCol = ObjectId("1234567890ab1234567890ac"), reasonMatching: primaryKeyReason)
+            assertThrows(objectIdObj["objectIdCol"] = ObjectId("1234567890ab1234567890ac"), reasonMatching: primaryKeyReason)
+            assertThrows(objectIdObj.setValue(ObjectId("1234567890ab1234567890ac"), forKey: "objectIdCol"), reasonMatching: primaryKeyReason)
         }
     }
 
@@ -186,7 +240,7 @@ class ObjectTests: TestCase {
 
     func testIndexedProperties() {
         XCTAssertEqual(Object.indexedProperties(), [], "indexed properties should default to []")
-        XCTAssertEqual(SwiftIndexedPropertiesObject.indexedProperties().count, 8)
+        XCTAssertEqual(SwiftIndexedPropertiesObject.indexedProperties().count, 10)
 
         let objectSchema = SwiftIndexedPropertiesObject().objectSchema
         XCTAssertTrue(objectSchema["stringCol"]!.isIndexed)
@@ -197,6 +251,8 @@ class ObjectTests: TestCase {
         XCTAssertTrue(objectSchema["int64Col"]!.isIndexed)
         XCTAssertTrue(objectSchema["boolCol"]!.isIndexed)
         XCTAssertTrue(objectSchema["dateCol"]!.isIndexed)
+        XCTAssertTrue(objectSchema["uuidCol"]!.isIndexed)
+        XCTAssertTrue(objectSchema["anyCol"]!.isIndexed)
 
         XCTAssertFalse(objectSchema["floatCol"]!.isIndexed)
         XCTAssertFalse(objectSchema["doubleCol"]!.isIndexed)
@@ -205,7 +261,7 @@ class ObjectTests: TestCase {
 
     func testIndexedOptionalProperties() {
         XCTAssertEqual(Object.indexedProperties(), [], "indexed properties should default to []")
-        XCTAssertEqual(SwiftIndexedOptionalPropertiesObject.indexedProperties().count, 8)
+        XCTAssertEqual(SwiftIndexedOptionalPropertiesObject.indexedProperties().count, 9)
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalStringCol"]!.isIndexed)
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDateCol"]!.isIndexed)
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalBoolCol"]!.isIndexed)
@@ -214,6 +270,7 @@ class ObjectTests: TestCase {
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt16Col"]!.isIndexed)
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt32Col"]!.isIndexed)
         XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalInt64Col"]!.isIndexed)
+        XCTAssertTrue(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalUUIDCol"]!.isIndexed)
 
         XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalDataCol"]!.isIndexed)
         XCTAssertFalse(SwiftIndexedOptionalPropertiesObject().objectSchema["optionalFloatCol"]!.isIndexed)
@@ -242,9 +299,15 @@ class ObjectTests: TestCase {
         let test: (SwiftObject) -> Void = { object in
             XCTAssertEqual(object.value(forKey: "boolCol") as! Bool?, false)
             XCTAssertEqual(object.value(forKey: "intCol") as! Int?, 123)
+            XCTAssertEqual(object.value(forKey: "int8Col") as! Int8?, 123)
+            XCTAssertEqual(object.value(forKey: "int16Col") as! Int16?, 123)
+            XCTAssertEqual(object.value(forKey: "int32Col") as! Int32?, 123)
+            XCTAssertEqual(object.value(forKey: "int64Col") as! Int64?, 123)
             XCTAssertEqual(object.value(forKey: "floatCol") as! Float?, 1.23 as Float)
             XCTAssertEqual(object.value(forKey: "doubleCol") as! Double?, 12.3)
             XCTAssertEqual(object.value(forKey: "stringCol") as! String?, "a")
+            XCTAssertEqual(object.value(forKey: "uuidCol") as! UUID?, UUID(uuidString: "137decc8-b300-4954-a233-f89909f4fd89")!)
+            XCTAssertNil(object.value(forKey: "anyCol"))
 
             let expected = object.value(forKey: "binaryCol") as! Data
             let actual = "a".data(using: String.Encoding.utf8)!
@@ -253,6 +316,7 @@ class ObjectTests: TestCase {
             XCTAssertEqual(object.value(forKey: "dateCol") as! Date?, Date(timeIntervalSince1970: 1))
             XCTAssertEqual((object.value(forKey: "objectCol")! as! SwiftBoolObject).boolCol, false)
             XCTAssert(object.value(forKey: "arrayCol")! is List<SwiftBoolObject>)
+            XCTAssert(object.value(forKey: "setCol")! is MutableSet<SwiftBoolObject>)
         }
 
         test(SwiftObject())
@@ -280,6 +344,7 @@ class ObjectTests: TestCase {
             XCTAssertNil(object.value(forKey: "optDoubleCol"))
             XCTAssertNil(object.value(forKey: "optBoolCol"))
             XCTAssertNil(object.value(forKey: "optEnumCol"))
+            XCTAssertNil(object.value(forKey: "optUuidCol"))
         }
 
         test(SwiftOptionalObject())
@@ -304,6 +369,10 @@ class ObjectTests: TestCase {
             XCTAssertNil((object.value(forKey: "string") as! List<String>).first)
             XCTAssertNil((object.value(forKey: "data") as! List<Data>).first)
             XCTAssertNil((object.value(forKey: "date") as! List<Date>).first)
+            XCTAssertNil((object.value(forKey: "decimal") as! List<Decimal128>).first)
+            XCTAssertNil((object.value(forKey: "objectId") as! List<ObjectId>).first)
+            XCTAssertNil((object.value(forKey: "uuid") as! List<UUID>).first)
+            XCTAssertNil((object.value(forKey: "any") as! List<AnyRealmValue>).first)
 
             // The `as Any?` casts below are only to silence the warning about it
             // happening implicitly and are not functionally required
@@ -317,6 +386,9 @@ class ObjectTests: TestCase {
             XCTAssertNil((object.value(forKey: "stringOpt") as! List<String?>).first as Any?)
             XCTAssertNil((object.value(forKey: "dataOpt") as! List<Data?>).first as Any?)
             XCTAssertNil((object.value(forKey: "dateOpt") as! List<Date?>).first as Any?)
+            XCTAssertNil((object.value(forKey: "decimalOpt") as! List<Decimal128?>).first as Any?)
+            XCTAssertNil((object.value(forKey: "objectIdOpt") as! List<ObjectId?>).first as Any?)
+            XCTAssertNil((object.value(forKey: "uuidOpt") as! List<UUID?>).first as Any?)
         }
 
         test(SwiftListObject())
@@ -324,6 +396,48 @@ class ObjectTests: TestCase {
         try! realm.write {
             test(realm.create(SwiftListObject.self, value: [:]))
             let addedObj = SwiftListObject()
+            realm.add(addedObj)
+            test(addedObj)
+        }
+    }
+
+    func testValueForKeyMutableSet() {
+        let test: (SwiftMutableSetObject) -> Void = { object in
+            XCTAssertEqual((object.value(forKey: "int") as! MutableSet<Int>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int8") as! MutableSet<Int8>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int16") as! MutableSet<Int16>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int32") as! MutableSet<Int32>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int64") as! MutableSet<Int64>).count, 0)
+            XCTAssertEqual((object.value(forKey: "float") as! MutableSet<Float>).count, 0)
+            XCTAssertEqual((object.value(forKey: "double") as! MutableSet<Double>).count, 0)
+            XCTAssertEqual((object.value(forKey: "string") as! MutableSet<String>).count, 0)
+            XCTAssertEqual((object.value(forKey: "data") as! MutableSet<Data>).count, 0)
+            XCTAssertEqual((object.value(forKey: "date") as! MutableSet<Date>).count, 0)
+            XCTAssertEqual((object.value(forKey: "decimal") as! MutableSet<Decimal128>).count, 0)
+            XCTAssertEqual((object.value(forKey: "objectId") as! MutableSet<ObjectId>).count, 0)
+            XCTAssertEqual((object.value(forKey: "uuid") as! MutableSet<UUID>).count, 0)
+            XCTAssertEqual((object.value(forKey: "any") as! MutableSet<AnyRealmValue>).count, 0)
+
+            XCTAssertEqual((object.value(forKey: "intOpt") as! MutableSet<Int?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int8Opt") as! MutableSet<Int8?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int16Opt") as! MutableSet<Int16?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int32Opt") as! MutableSet<Int32?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "int64Opt") as! MutableSet<Int64?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "floatOpt") as! MutableSet<Float?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "doubleOpt") as! MutableSet<Double?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "stringOpt") as! MutableSet<String?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "dataOpt") as! MutableSet<Data?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "dateOpt") as! MutableSet<Date?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "decimalOpt") as! MutableSet<Decimal128?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "objectIdOpt") as! MutableSet<ObjectId?>).count, 0)
+            XCTAssertEqual((object.value(forKey: "uuidOpt") as! MutableSet<UUID?>).count, 0)
+        }
+
+        test(SwiftMutableSetObject())
+        let realm = try! Realm()
+        try! realm.write {
+            test(realm.create(SwiftMutableSetObject.self, value: [:]))
+            let addedObj = SwiftMutableSetObject()
             realm.add(addedObj)
             test(addedObj)
         }
@@ -357,12 +471,25 @@ class ObjectTests: TestCase {
         XCTAssertEqual(object.name, "foo")
         XCTAssertEqual(object.array[0].stringCol, "bar")
         XCTAssertEqual(object.intArray[0].intCol, 50)
+
+        let json2: [String: Any] = ["name": "foo", "set": [["stringCol": "bar"]], "intSet": [["intCol": 50]]]
+        let object2 = SwiftMutableSetPropertyObject()
+        json2.keys.forEach { key in
+            object2.setValue(json2[key], forKey: key)
+        }
+        XCTAssertEqual(object2.name, "foo")
+        XCTAssertEqual(object2.set[0].stringCol, "bar")
+        XCTAssertEqual(object2.intSet[0].intCol, 50)
     }
 
     func testSettingUnmanagedObjectValuesWithBadSwiftDictionary() {
         let json: [String: Any] = ["name": "foo", "array": [["stringCol": NSObject()]], "intArray": [["intCol": 50]]]
         let object = SwiftArrayPropertyObject()
         assertThrows({ json.keys.forEach { key in object.setValue(json[key], forKey: key) } }())
+
+        let json2: [String: Any] = ["name": "foo", "set": [["stringCol": NSObject()]], "intSet": [["intCol": 50]]]
+        let object2 = SwiftMutableSetPropertyObject()
+        assertThrows({ json2.keys.forEach { key in object2.setValue(json2[key], forKey: key) } }())
     }
 
     func setAndTestAllTypes(_ setter: (SwiftObject, Any?, String) -> Void,
@@ -372,6 +499,18 @@ class ObjectTests: TestCase {
 
         setter(object, 321, "intCol")
         XCTAssertEqual(getter(object, "intCol") as! Int?, 321)
+
+        setter(object, Int8(1), "int8Col")
+        XCTAssertEqual(getter(object, "int8Col") as! Int8?, 1)
+
+        setter(object, Int16(321), "int16Col")
+        XCTAssertEqual(getter(object, "int16Col") as! Int16?, 321)
+
+        setter(object, Int32(321), "int32Col")
+        XCTAssertEqual(getter(object, "int32Col") as! Int32?, 321)
+
+        setter(object, Int64(321), "int64Col")
+        XCTAssertEqual(getter(object, "int64Col") as! Int64?, 321)
 
         setter(object, NSNumber(value: 32.1 as Float), "floatCol")
         XCTAssertEqual(getter(object, "floatCol") as! Float?, 32.1 as Float)
@@ -389,7 +528,18 @@ class ObjectTests: TestCase {
         setter(object, Date(timeIntervalSince1970: 333), "dateCol")
         XCTAssertEqual(getter(object, "dateCol") as! Date?, Date(timeIntervalSince1970: 333))
 
+        setter(object, UUID(uuidString: "137DECC8-B300-4954-A233-F89909F4FD89"), "uuidCol")
+        XCTAssertEqual(getter(object, "uuidCol") as! UUID?, UUID(uuidString: "137DECC8-B300-4954-A233-F89909F4FD89"))
+
+        setter(object, "hello", "anyCol")
+        XCTAssertEqual(getter(object, "anyCol") as! String, "hello")
+
         let boolObject = SwiftBoolObject(value: [true])
+
+        setter(object, boolObject, "anyCol")
+        assertEqual(getter(object, "anyCol") as? SwiftBoolObject, boolObject)
+        XCTAssertEqual((getter(object, "anyCol") as! SwiftBoolObject).boolCol, true)
+
         setter(object, boolObject, "objectCol")
         assertEqual(getter(object, "objectCol") as? SwiftBoolObject, boolObject)
         XCTAssertEqual((getter(object, "objectCol") as! SwiftBoolObject).boolCol, true)
@@ -414,6 +564,27 @@ class ObjectTests: TestCase {
         setter(object, [boolObject], "arrayCol")
         setter(object, NSNull(), "arrayCol")
         XCTAssertEqual((getter(object, "arrayCol") as! List<SwiftBoolObject>).count, 0)
+
+        let set = MutableSet<SwiftBoolObject>()
+        set.insert(boolObject)
+        setter(object, set, "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>).count, 1)
+        assertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>)[0], boolObject)
+
+        set.removeAll()
+        setter(object, set, "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>).count, 0)
+
+        setter(object, [boolObject], "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>).count, 1)
+        assertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>)[0], boolObject)
+
+        setter(object, nil, "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>).count, 0)
+
+        setter(object, [boolObject], "setCol")
+        setter(object, NSNull(), "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<SwiftBoolObject>).count, 0)
     }
 
     func dynamicSetAndTestAllTypes(_ setter: (DynamicObject, Any?, String) -> Void,
@@ -424,6 +595,18 @@ class ObjectTests: TestCase {
 
         setter(object, 321, "intCol")
         XCTAssertEqual((getter(object, "intCol") as! Int), 321)
+
+        setter(object, Int8(1), "int8Col")
+        XCTAssertEqual(getter(object, "int8Col") as! Int8?, 1)
+
+        setter(object, Int16(321), "int16Col")
+        XCTAssertEqual(getter(object, "int16Col") as! Int16?, 321)
+
+        setter(object, Int32(321), "int32Col")
+        XCTAssertEqual(getter(object, "int32Col") as! Int32?, 321)
+
+        setter(object, Int64(321), "int64Col")
+        XCTAssertEqual(getter(object, "int64Col") as! Int64?, 321)
 
         setter(object, NSNumber(value: 32.1 as Float), "floatCol")
         XCTAssertEqual((getter(object, "floatCol") as! Float), 32.1 as Float)
@@ -441,9 +624,21 @@ class ObjectTests: TestCase {
         setter(object, Date(timeIntervalSince1970: 333), "dateCol")
         XCTAssertEqual((getter(object, "dateCol") as! Date), Date(timeIntervalSince1970: 333))
 
+        setter(object, UUID(uuidString: "137DECC8-B300-4954-A233-F89909F4FD89"), "uuidCol")
+        XCTAssertEqual(getter(object, "uuidCol") as! UUID?, UUID(uuidString: "137DECC8-B300-4954-A233-F89909F4FD89"))
+
+        setter(object, "hello", "anyCol")
+        XCTAssertEqual((getter(object, "anyCol") as! String), "hello")
+
+        setter(object, boolObject, "anyCol")
+        assertEqual((getter(object, "anyCol") as! DynamicObject), boolObject)
+        XCTAssertEqual(((getter(object, "anyCol") as! DynamicObject)["boolCol"] as! Bool), true)
+        XCTAssertEqual(((getter(object, "anyCol") as! DynamicObject).boolCol as! Bool), true)
+
         setter(object, boolObject, "objectCol")
         assertEqual((getter(object, "objectCol") as! DynamicObject), boolObject)
         XCTAssertEqual(((getter(object, "objectCol") as! DynamicObject)["boolCol"] as! Bool), true)
+        XCTAssertEqual(((getter(object, "objectCol") as! DynamicObject).boolCol as! Bool), true)
 
         setter(object, [boolObject], "arrayCol")
         XCTAssertEqual((getter(object, "arrayCol") as! List<DynamicObject>).count, 1)
@@ -460,6 +655,22 @@ class ObjectTests: TestCase {
 
         setter(object, nil, "arrayCol")
         XCTAssertEqual((getter(object, "arrayCol") as! List<DynamicObject>).count, 0)
+
+        setter(object, [boolObject], "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>).count, 1)
+        assertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>)[0], boolObject)
+
+        let set = getter(object, "setCol") as! MutableSet<DynamicObject>
+        set.removeAll()
+        setter(object, set, "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>).count, 0)
+
+        setter(object, [boolObject], "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>).count, 1)
+        assertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>)[0], boolObject)
+
+        setter(object, nil, "setCol")
+        XCTAssertEqual((getter(object, "setCol") as! MutableSet<DynamicObject>).count, 0)
     }
 
     // Yields a read-write migration `SwiftObject` to the given block
@@ -526,6 +737,18 @@ class ObjectTests: TestCase {
         }
     }
 
+    func testDynamicMemberSubscript() {
+        withMigrationObject { migrationObject, migration in
+            let boolObject = migration.create("SwiftBoolObject", value: [true])
+            migrationObject.anyCol = boolObject
+            self.assertEqual(migrationObject.anyCol as? DynamicObject, boolObject)
+            migrationObject.objectCol = boolObject
+            self.assertEqual(migrationObject.objectCol as? DynamicObject, boolObject)
+            migrationObject.anyCol = 12345
+            XCTAssertEqual(migrationObject.anyCol as! Int, 12345)
+        }
+    }
+
     func testDynamicList() {
         let realm = try! Realm()
         let arrayObject = SwiftArrayPropertyObject()
@@ -541,6 +764,29 @@ class ObjectTests: TestCase {
         assertEqual(dynamicArray[1], str2)
         XCTAssertEqual(arrayObject.dynamicList("intArray").count, 0)
         assertThrows(arrayObject.dynamicList("noSuchList"))
+    }
+
+    func testDynamicMutableSet() {
+        let realm = try! Realm()
+        let setObject = SwiftMutableSetPropertyObject()
+        let str1 = SwiftStringObject()
+        let str2 = SwiftStringObject()
+        setObject.set.insert(objectsIn: [str1, str2])
+        try! realm.write {
+            realm.add(setObject)
+        }
+        let dynamicSet = setObject.dynamicMutableSet("set")
+        XCTAssertEqual(dynamicSet.count, 2)
+
+        XCTAssertTrue(dynamicSet.map { (o) in
+            o.isSameObject(as: str1)
+        }.contains(true))
+        XCTAssertTrue(dynamicSet.map { (o) in
+            o.isSameObject(as: str2)
+        }.contains(true))
+
+        XCTAssertEqual(setObject.dynamicMutableSet("intSet").count, 0)
+        assertThrows(setObject.dynamicMutableSet("noSuchSet"))
     }
 
     func testObjectiveCTypeProperties() {
@@ -560,34 +806,58 @@ class ObjectTests: TestCase {
         XCTAssertEqual(data, object.dataCol)
     }
 
+    // MARK: - Observation tests
+
     func testObserveUnmanagedObject() {
         assertThrows(SwiftIntObject().observe { _ in }, reason: "managed")
+        assertThrows(SwiftIntObject().observe(keyPaths: ["intCol"]) { _ in }, reason: "managed")
     }
 
     func testDeleteObservedObject() {
         let realm = try! Realm()
         realm.beginWrite()
-        let object = realm.create(SwiftIntObject.self, value: [0])
+        let object0 = realm.create(SwiftIntObject.self, value: [0])
+        let object1 = realm.create(SwiftIntObject.self, value: [0])
         try! realm.commitWrite()
 
-        let exp = expectation(description: "")
-        let token = object.observe { change in
-            if case .deleted = change {
-            } else {
+        let exp0 = expectation(description: "Delete observed object")
+        let token0 = object0.observe { change in
+            guard case .deleted = change else {
                 XCTFail("expected .deleted, got \(change)")
+                return
             }
-            exp.fulfill()
+            exp0.fulfill()
+        }
+
+        let exp1 = expectation(description: "Delete observed object")
+        let token1 = object1.observe(keyPaths: ["intCol"]) { change in
+            guard case .deleted = change else {
+                XCTFail("expected .deleted, got \(change)")
+                return
+            }
+            exp1.fulfill()
         }
 
         realm.beginWrite()
-        realm.delete(object)
+        realm.delete(object0)
+        realm.delete(object1)
         try! realm.commitWrite()
 
-        waitForExpectations(timeout: 2)
-        token.invalidate()
+        waitForExpectations(timeout: 1)
+        token0.invalidate()
+        token1.invalidate()
     }
 
-    func checkChange<T: Equatable, U: Equatable>(_ name: String, _ old: T?, _ new: U?, _ change: ObjectChange<Object>) {
+    func testObserveInvalidKeyPath () {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = realm.create(SwiftObject.self)
+        try! realm.commitWrite()
+        assertThrows(object.observe(keyPaths: ["notAProperty"], { _ in }), reason: "Property 'notAProperty' not found in object of type 'SwiftObject'")
+        assertThrows(object.observe(keyPaths: ["arrayCol.alsoNotAProperty"], { _ in }), reason: "Property 'alsoNotAProperty' not found in object of type 'SwiftBoolObject'")
+    }
+
+    func checkChange<T: Equatable, U: Equatable>(_ name: String, _ old: T?, _ new: U?, _ change: ObjectChange<ObjectBase>) {
         if case .change(_, let properties) = change {
             XCTAssertEqual(properties.count, 1)
             if let prop = properties.first {
@@ -598,11 +868,11 @@ class ObjectTests: TestCase {
         } else {
             XCTFail("expected .change, got \(change)")
         }
-
     }
 
-    func expectChange<T: Equatable, U: Equatable>(_ name: String, _ old: T?, _ new: U?) -> ((ObjectChange<Object>) -> Void) {
+    func expectChange<T: Equatable, U: Equatable>(_ name: String, _ old: T?, _ new: U?, _ inverted: Bool = false) -> ((ObjectChange<ObjectBase>) -> Void) {
         let exp = expectation(description: "change from \(String(describing: old)) to \(String(describing: new))")
+        exp.isInverted = inverted
         return { change in
             self.checkChange(name, old, new, change)
             exp.fulfill()
@@ -621,6 +891,125 @@ class ObjectTests: TestCase {
         }
 
         waitForExpectations(timeout: 2)
+        token.invalidate()
+    }
+
+    // !!!: Fails, but the feature will not support this behavior at first.
+    // See version below
+//    func testModifyObservedKeyPathLocally() {
+//        let realm = try! Realm()
+//        realm.beginWrite()
+//        let object = realm.create(SwiftObject.self)
+//        try! realm.commitWrite()
+//
+//        // Expect notification for "intCol" keyPath when "intCol" is modified
+//        let token1 = object.observe(keyPaths: ["intCol"], expectChange("intCol", Int?.none, 2))
+//
+//        // Expect no notification for "boolCol" keypath when "intCol" is modified
+//        let token0 = object.observe(keyPaths: ["boolCol"], { change in
+//            XCTFail("expected no change, got \(change)")
+//        })
+//
+//        try! realm.write {
+//            object.intCol = 2
+//        }
+//
+//        waitForExpectations(timeout: 2)
+//        token0.invalidate()
+//        token1.invalidate()
+//    }
+
+    func testModifyObservedKeyPathLocally() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect notification for "intCol" keyPath when "intCol" is modified
+        let token = object.observe(keyPaths: ["intCol"], expectChange("intCol", Int?.none, 2))
+        try! realm.write {
+            object.intCol = 2
+        }
+        waitForExpectations(timeout: 0.1)
+        token.invalidate()
+    }
+
+    func testModifyUnobservedKeyPathLocally() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect no notification for "boolCol" keypath when "intCol" is modified
+        let ex = expectation(description: "no change")
+        ex.isInverted = true
+        let token = object.observe(keyPaths: ["boolCol"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            object.intCol = 3
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testModifyMultipleObservedPartialKeyPathLocally() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect notification for "intCol" keyPath when "intCol" is modified
+        var ex = expectation(description: "expect notification")
+        var token = object.observe(keyPaths: [\SwiftObject.intCol, \SwiftObject.stringCol]) { changes in
+            if case .change(_, let properties) = changes {
+                XCTAssertEqual(properties.count, 1)
+                XCTAssertEqual(properties[0].newValue as! Int, 2)
+                ex.fulfill()
+            }
+        }
+        try! realm.write {
+            object.intCol = 2
+        }
+        waitForExpectations(timeout: 0.1)
+        token.invalidate()
+
+        // Expect notification for "stringCol" keyPath when "stringCol" is modified
+        ex = expectation(description: "expect notification")
+        token = object.observe(keyPaths: [\SwiftObject.intCol, \SwiftObject.stringCol]) { changes in
+            if case .change(_, let properties) = changes {
+                XCTAssertEqual(properties.count, 1)
+                XCTAssertEqual(properties[0].newValue as! String, "new string")
+                ex.fulfill()
+            }
+        }
+        try! realm.write {
+            object.stringCol = "new string"
+        }
+        waitForExpectations(timeout: 0.1)
+        token.invalidate()
+    }
+
+    func testModifyUnobservedPartialKeyPathLocally() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect no notification for "boolCol" keypath when "intCol" is modified
+        let ex = expectation(description: "no change")
+        ex.isInverted = true
+        let token = object.observe(keyPaths: [\SwiftObject.boolCol, \SwiftObject.stringCol], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            object.intCol = 3
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
         token.invalidate()
     }
 
@@ -643,6 +1032,52 @@ class ObjectTests: TestCase {
         token.invalidate()
     }
 
+    func testModifyObservedKeyPathRemotely() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect notification for "intCol" keyPath when "intCol" is modified
+        let token = object.observe(keyPaths: ["intCol"], expectChange("intCol", 123, 2))
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.objects(SwiftObject.self).first!.intCol = 2
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0.1)
+        token.invalidate()
+    }
+
+    func testModifyUnobservedKeyPathRemotely() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = SwiftObject()
+        realm.add(object)
+        try! realm.commitWrite()
+
+        // Expect no notification for "boolCol" keypath when "intCol" is modified
+        let ex = expectation(description: "no change")
+        ex.isInverted = true
+        let token = object.observe(keyPaths: ["boolCol"], { _ in
+            ex.fulfill()
+        })
+
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                let first = realm.objects(SwiftObject.self).first!
+                first.intCol += 1
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
     func testListPropertyNotifications() {
         let realm = try! Realm()
         realm.beginWrite()
@@ -655,6 +1090,299 @@ class ObjectTests: TestCase {
             try! realm.write {
                 let obj = realm.objects(SwiftRecursiveObject.self).first!
                 obj.objects.append(obj)
+            }
+        }
+
+        waitForExpectations(timeout: 2)
+        token.invalidate()
+    }
+
+    func testListPropertyKeyPathNotifications() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let employee = realm.create(SwiftEmployeeObject.self)
+        let company = realm.create(SwiftCompanyObject.self)
+        company.employees.append(employee)
+        try! realm.commitWrite()
+
+        // Expect no notification for "employees" when "employee.hired" is changed
+        var ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        var token = company.observe(keyPaths: ["employees"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            employee.hired = true
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect a notification for "employees.hired" when "employee.hired" is changed
+        token = company.observe(keyPaths: ["employees.hired"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            XCTAssertTrue(employee.hired)
+            employee.hired = false
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect no notification for "employees.hired" when "employee.age" is changed.
+        ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        token = company.observe(keyPaths: ["employees.hired"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            employee.age = 35
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect notification for "employees.hired" when an employee is deleted.
+        token = company.observe(keyPaths: ["employees.hired"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            realm.delete(employee)
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect notification for "employees.hired" when an employee is added.
+        token = company.observe(keyPaths: ["employees.hired"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            let employee2 = realm.create(SwiftEmployeeObject.self)
+            company.employees.append(employee2)
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect notification for "employees.hired" when an employee is reassigned.
+        token = company.observe(keyPaths: ["employees.hired"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            let employee3 = realm.create(SwiftEmployeeObject.self)
+            company.employees[0] = employee3
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect notification for "employees" when an employee is added.
+        token = company.observe(keyPaths: ["employees"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            let employee4 = realm.create(SwiftEmployeeObject.self)
+            company.employees.append(employee4)
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect notification for "employees" when an employee is reassigned.
+        token = company.observe(keyPaths: ["employees"], expectChange("employees", Int?.none, Int?.none))
+        try! realm.write {
+            let employee5 = realm.create(SwiftEmployeeObject.self)
+            company.employees[0] = employee5
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+
+        // Expect no notification for "employees" when "company.name" is changed
+        ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        token = company.observe(keyPaths: ["employees"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            company.name = "changed"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testLinkPropertyKeyPathNotifications1() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect notification for "dog.dogName" when "dog.dogName" is changed
+        let token = person.observe(keyPaths: ["dog.dogName"], expectChange("dog", Int?.none, Int?.none))
+        try! realm.write {
+            dog.dogName = "rex"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testLinkPropertyKeyPathNotifications2() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect notification for "dog.dogName" when "dog" is reassigned.
+        let token = person.observe(keyPaths: ["dog.dogName"], expectChange("dog", Int?.none, Int?.none))
+        try! realm.write {
+            let newDog = SwiftDogObject()
+            person.dog = newDog
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testLinkPropertyKeyPathNotifications3() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect no notification for "dog" when "person.name" is changed
+        let ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        let token = person.observe(keyPaths: ["dog"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            person.name = "Teddy"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testLinkPropertyKeyPathNotifications4() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect no notification for "dog" when "dog.dogName" is changed
+        let ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        let token = person.observe(keyPaths: ["dog"], {_ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            dog.dogName = "fido"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testBacklinkPropertyKeyPathNotifications1() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect no notification for "owners" when "dog.dogName" is changed
+        let ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        let token = dog.observe(keyPaths: ["owners"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            dog.dogName = "fido"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testBacklinkPropertyKeyPathNotifications2() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect no notification for "owners" when "owner.name" is changed
+        let ex = expectation(description: "no change notification")
+        ex.isInverted = true
+        let token = dog.observe(keyPaths: ["owners"], { _ in
+            ex.fulfill()
+        })
+        try! realm.write {
+            let owner = dog.owners.first!
+            owner.name = "Tom"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testBacklinkPropertyKeyPathNotifications3() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect notification for "owners.name" when "owner.name" is changed
+        let token = dog.observe(keyPaths: ["owners.name"], expectChange("owners", String?.none, String?.none))
+        try! realm.write {
+            let owner = dog.owners.first!
+            owner.name = "Abe"
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testBacklinkPropertyKeyPathNotifications4() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect notification for "owners" when a new owner is added.
+        let token = dog.observe(keyPaths: ["owners"], expectChange("owners", Int?.none, Int?.none))
+        try! realm.write {
+            let newPerson = SwiftOwnerObject()
+            realm.add(newPerson)
+            newPerson.dog = dog
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+    }
+
+    func testBacklinkPropertyKeyPathNotifications5() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let person = realm.create(SwiftOwnerObject.self)
+        let dog = realm.create(SwiftDogObject.self)
+        person.dog = dog
+        try! realm.commitWrite()
+
+        // Expect notification for "owners.name" when a new owner is added.
+        let token = dog.observe(keyPaths: ["owners.name"], expectChange("owners", Int?.none, Int?.none))
+        try! realm.write {
+            let newPerson = SwiftOwnerObject()
+            realm.add(newPerson)
+            newPerson.dog = dog
+        }
+        waitForExpectations(timeout: 0.1, handler: nil)
+        token.invalidate()
+}
+
+    func testMutableSetPropertyNotifications() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = realm.create(SwiftRecursiveObject.self, value: [[]])
+        try! realm.commitWrite()
+
+        let token = object.observe(expectChange("objectSet", Int?.none, Int?.none))
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                let obj = realm.objects(SwiftRecursiveObject.self).first!
+                obj.objectSet.insert(obj)
             }
         }
 
@@ -703,6 +1431,62 @@ class ObjectTests: TestCase {
         token.invalidate()
     }
 
+    func testOptionalPropertyKeyPathNotifications() {
+        let realm = try! Realm()
+        let object = SwiftOptionalDefaultValuesObject()
+        try! realm.write {
+            realm.add(object)
+        }
+
+        // Expect notification for change on observed path
+        var token = object.observe(keyPaths: ["optIntCol"], expectChange("optIntCol", 1, 2))
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.objects(SwiftOptionalDefaultValuesObject.self).first!.optIntCol.value = 2
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0)
+        token.invalidate()
+
+        // Expect no notification for change outside of observed path
+        token = object.observe(keyPaths: ["optStringCol"], expectChange("optIntCol", 2, 3, true)) // Passing true inverts expectation
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.objects(SwiftOptionalDefaultValuesObject.self).first!.optIntCol.value = 3
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0)
+        token.invalidate()
+
+        // Expect notification for change from value to nil on observed path
+        token = object.observe(keyPaths: ["optIntCol"], expectChange("optIntCol", 3, Int?.none))
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.objects(SwiftOptionalDefaultValuesObject.self).first!.optIntCol.value = nil
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0)
+        token.invalidate()
+
+        // Expect notification for change from nil to value on observed path
+        token = object.observe(keyPaths: ["optIntCol"], expectChange("optIntCol", Int?.none, 2))
+        dispatchSyncNewThread {
+            let realm = try! Realm()
+            try! realm.write {
+                realm.objects(SwiftOptionalDefaultValuesObject.self).first!.optIntCol.value = 2
+            }
+        }
+        realm.refresh()
+        waitForExpectations(timeout: 0)
+        token.invalidate()
+    }
+
     func testObserveOnDifferentQueue() {
         let realm = try! Realm()
         realm.beginWrite()
@@ -715,6 +1499,32 @@ class ObjectTests: TestCase {
             self.checkChange("intCol", 1, 2, change)
             sema.signal()
         }
+        // wait for the notification to be registered as otherwise it may not
+        // have the old value
+        queue.sync { }
+        try! realm.write {
+            object.intCol = 2
+        }
+
+        sema.wait()
+        token.invalidate()
+        queue.sync { }
+    }
+
+    func testObserveKeyPathOnDifferentQueue() {
+        let realm = try! Realm()
+        realm.beginWrite()
+        let object = realm.create(SwiftObject.self)
+        object.intCol = 1
+        try! realm.commitWrite()
+
+        let queue = DispatchQueue(label: "label")
+        let sema = DispatchSemaphore(value: 0)
+        let token = object.observe(keyPaths: ["intCol"], on: queue) { change in
+            self.checkChange("intCol", 1, 2, change)
+            sema.signal()
+        }
+
         // wait for the notification to be registered as otherwise it may not
         // have the old value
         queue.sync { }
@@ -760,6 +1570,8 @@ class ObjectTests: TestCase {
         token2.invalidate()
         queue.sync { }
     }
+
+    // MARK: Equality Tests
 
     func testEqualityForObjectTypeWithPrimaryKey() {
         let realm = try! Realm()
@@ -871,6 +1683,8 @@ class ObjectTests: TestCase {
         XCTAssertEqual(realm.objects(type(of: managedStringObject)).count, 1)
     }
 
+    // MARK: Frozen Objects Tests
+
     func testIsFrozen() {
         let obj = SwiftStringObject()
         XCTAssertFalse(obj.isFrozen)
@@ -884,15 +1698,36 @@ class ObjectTests: TestCase {
         XCTAssertTrue(frozen.isFrozen)
     }
 
+    func testFreezeUnmanaged() {
+        assertThrows(SwiftStringObject().freeze(), reason: "Unmanaged objects cannot be frozen.")
+    }
+
+    func testModifyFrozenObject() {
+        let obj = SwiftStringObject()
+        XCTAssertFalse(obj.isFrozen)
+
+        let realm = try! Realm()
+        try! realm.write {
+            realm.add(obj)
+        }
+
+        let frozenObj = obj.freeze()
+
+        assertThrows(frozenObj.stringCol = "foo",
+                     reason: "Attempting to modify a frozen object - call thaw on the Object instance first.")
+    }
+
     func testFreezeDynamicObject() {
         let realm = try! Realm()
         try! realm.write {
-            realm.create(SwiftObject.self, value: ["arrayCol": [[true]]])
+            realm.create(SwiftObject.self, value: ["arrayCol": [[true]], "setCol": [[true]]])
         }
         let obj = realm.dynamicObjects("SwiftObject").first!.freeze()
         XCTAssertTrue(obj.isFrozen)
         XCTAssertTrue(obj.dynamicList("arrayCol").isFrozen)
         XCTAssertTrue(obj.dynamicList("arrayCol").first!.isFrozen)
+        XCTAssertTrue(obj.dynamicMutableSet("setCol").isFrozen)
+        XCTAssertTrue(obj.dynamicMutableSet("setCol").first!.isFrozen)
     }
 
     func testFreezeAllPropertyTypes() {
@@ -907,7 +1742,9 @@ class ObjectTests: TestCase {
                     "stringCol": "b",
                     "binaryCol": "b".data(using: String.Encoding.utf8)!,
                     "dateCol": Date(timeIntervalSince1970: 2),
-                    "objectCol": [true]
+                    "objectCol": [true],
+                    "uuidCol": UUID(),
+                    "anyCol": "hello"
                 ]),
                 realm.create(SwiftOptionalObject.self, value: [
                     "optNSStringCol": "NSString",
@@ -943,7 +1780,10 @@ class ObjectTests: TestCase {
                     "doubleOpt": [17.17, nil],
                     "stringOpt": ["18", nil],
                     "dataOpt": ["19".data(using: String.Encoding.utf8)!, nil],
-                    "dateOpt": [Date(timeIntervalSince1970: 20), nil]
+                    "dateOpt": [Date(timeIntervalSince1970: 20), nil],
+                    "uuid": [UUID()],
+                    "uuidOpt": [UUID(), nil],
+                    "any": ["hello", nil]
                 ])
             )
         }
@@ -957,6 +1797,8 @@ class ObjectTests: TestCase {
         XCTAssertEqual(obj.binaryCol, frozenObj.binaryCol)
         XCTAssertEqual(obj.dateCol, frozenObj.dateCol)
         XCTAssertEqual(obj.objectCol?.boolCol, frozenObj.objectCol?.boolCol)
+        XCTAssertEqual(obj.uuidCol, frozenObj.uuidCol)
+        XCTAssertEqual(obj.anyCol.value, frozenObj.anyCol.value)
 
         let frozenOptObj = optObj.freeze()
         XCTAssertEqual(optObj.optNSStringCol, frozenOptObj.optNSStringCol)
@@ -972,6 +1814,7 @@ class ObjectTests: TestCase {
         XCTAssertEqual(optObj.optDoubleCol.value, frozenOptObj.optDoubleCol.value)
         XCTAssertEqual(optObj.optBoolCol.value, frozenOptObj.optBoolCol.value)
         XCTAssertEqual(optObj.optEnumCol.value, frozenOptObj.optEnumCol.value)
+        XCTAssertEqual(optObj.optUuidCol, frozenOptObj.optUuidCol)
 
         let frozenListObj = listObj.freeze()
         XCTAssertEqual(Array(listObj.int), Array(frozenListObj.int))
@@ -994,5 +1837,81 @@ class ObjectTests: TestCase {
         XCTAssertEqual(Array(listObj.stringOpt), Array(frozenListObj.stringOpt))
         XCTAssertEqual(Array(listObj.dataOpt), Array(frozenListObj.dataOpt))
         XCTAssertEqual(Array(listObj.dateOpt), Array(frozenListObj.dateOpt))
+        XCTAssertEqual(Array(listObj.uuid), Array(frozenListObj.uuid))
+        XCTAssertEqual(Array(listObj.uuidOpt), Array(frozenListObj.uuidOpt))
+        XCTAssertEqual(Array(listObj.any.map { $0 }), Array(frozenListObj.any.map { $0 }))
+    }
+
+    func testThaw() {
+        let realm = try! Realm()
+        let obj = try! realm.write {
+            realm.create(SwiftBoolObject.self, value: ["boolCol": true])
+        }
+
+        let frozenObj = obj.freeze()
+        XCTAssertTrue(frozenObj.isFrozen)
+        assertThrows(try! frozenObj.realm!.write {}, reason: "Can't perform transactions on a frozen Realm")
+
+        let liveObj = frozenObj.thaw()!
+        XCTAssertFalse(liveObj.isFrozen)
+        XCTAssertEqual(liveObj.boolCol, frozenObj.boolCol)
+
+        try! liveObj.realm!.write({ liveObj.boolCol = false })
+        XCTAssertNotEqual(liveObj.boolCol, frozenObj.boolCol)
+    }
+
+    func testThawUnmanaged() {
+        assertThrows(SwiftBoolObject().thaw(), reason: "Unmanaged objects cannot be thawed.")
+    }
+
+    func testThawDeleted() {
+        let realm = try! Realm()
+        let obj = try! realm.write {
+            realm.create(SwiftBoolObject.self, value: ["boolCol": true])
+        }
+
+        let frozen = obj.freeze()
+        try! realm.write { realm.delete(obj) }
+        XCTAssertNotNil(frozen)
+
+        let thawed = frozen.thaw()
+        XCTAssertNil(thawed, "Thaw should return nil when object was deleted")
+    }
+
+    func testThawPreviousVersion() {
+        let realm = try! Realm()
+        let obj = try! realm.write {
+            realm.create(SwiftBoolObject.self, value: ["boolCol": true])
+        }
+
+        let frozen = obj.freeze()
+        XCTAssertTrue(frozen.isFrozen)
+
+        try! obj.realm!.write({ obj.boolCol = false })
+        XCTAssert(frozen.boolCol, "Frozen objects shouldn't mutate")
+
+        let thawed = frozen.thaw()!
+        XCTAssertFalse(thawed.isFrozen)
+        XCTAssertFalse(thawed.boolCol, "Thaw should reflect transactions since the original reference was frozen")
+    }
+
+    func testThawUpdatedOnDifferentThread() {
+        let obj = try! Realm().write {
+            try! Realm().create(SwiftBoolObject.self, value: ["boolCol": true])
+        }
+        let frozen = obj.freeze()
+        let thawed = frozen.thaw()!
+        let tsr = ThreadSafeReference(to: thawed)
+
+        dispatchSyncNewThread {
+            let resolved = try! Realm().resolve(tsr)!
+            try! Realm().write({ resolved.boolCol = false })
+        }
+
+        XCTAssert(frozen.thaw()!.boolCol)
+        XCTAssert(thawed.boolCol)
+        try! Realm().refresh()
+        XCTAssertFalse(frozen.thaw()!.boolCol)
+        XCTAssertFalse(thawed.boolCol)
     }
 }

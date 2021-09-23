@@ -19,6 +19,7 @@
 #import <XCTest/XCTest.h>
 
 #import "RLMMultiProcessTestCase.h"
+#import "TestUtils.h"
 
 #import "RLMAccessor.h"
 #import "RLMObjectSchema_Private.hpp"
@@ -29,8 +30,8 @@
 #import "RLMRealm_Private.hpp"
 #import "RLMSchema_Private.hpp"
 #import "RLMUtil.hpp"
-#import "schema.hpp"
 
+#import <realm/object-store/schema.hpp>
 #import <realm/table.hpp>
 
 #import <algorithm>
@@ -54,9 +55,9 @@
 @implementation SchemaTestClassSecondChild
 @end
 
-RLM_ARRAY_TYPE(SchemaTestClassBase)
-RLM_ARRAY_TYPE(SchemaTestClassFirstChild)
-RLM_ARRAY_TYPE(SchemaTestClassSecondChild)
+RLM_COLLECTION_TYPE(SchemaTestClassBase)
+RLM_COLLECTION_TYPE(SchemaTestClassFirstChild)
+RLM_COLLECTION_TYPE(SchemaTestClassSecondChild)
 
 @interface SchemaTestClassLink : RLMObject
 @property SchemaTestClassBase *base;
@@ -66,6 +67,11 @@ RLM_ARRAY_TYPE(SchemaTestClassSecondChild)
 @property RLM_GENERIC_ARRAY(SchemaTestClassBase) *baseArray;
 @property RLM_GENERIC_ARRAY(SchemaTestClassFirstChild) *childArray;
 @property RLM_GENERIC_ARRAY(SchemaTestClassSecondChild) *secondChildArray;
+
+@property RLM_GENERIC_SET(SchemaTestClassBase) *baseSet;
+@property RLM_GENERIC_SET(SchemaTestClassFirstChild) *childSet;
+@property RLM_GENERIC_SET(SchemaTestClassSecondChild) *secondChildSet;
+
 @end
 @implementation SchemaTestClassLink
 @end
@@ -80,7 +86,7 @@ RLM_ARRAY_TYPE(SchemaTestClassSecondChild)
 }
 @end
 
-RLM_ARRAY_TYPE(NonDefaultObject);
+RLM_COLLECTION_TYPE(NonDefaultObject);
 
 @interface NonDefaultArrayObject : RLMObject
 @property RLM_GENERIC_ARRAY(NonDefaultObject) *array;
@@ -210,11 +216,31 @@ RLM_ARRAY_TYPE(NonDefaultObject);
 @interface MixedProperty : FakeObject
 @property id mixed;
 @end
-
 @implementation MixedProperty
 @end
 
-RLM_ARRAY_TYPE(SchemaTestsLinkSource)
+@interface LinkFromEmbeddedToTopLevel : FakeEmbeddedObject
+@property IntObject *link;
+@end
+@implementation LinkFromEmbeddedToTopLevel
+@end
+
+@interface ArrayFromEmbeddedToTopLevel : FakeEmbeddedObject
+@property RLMArray<IntObject> *array;
+@end
+@implementation ArrayFromEmbeddedToTopLevel
+@end
+
+@interface EmbeddedObjectWithPrimaryKey : FakeEmbeddedObject
+@property int pk;
+@end
+@implementation EmbeddedObjectWithPrimaryKey
++ (NSString *)primaryKey {
+    return @"pk";
+}
+@end
+
+RLM_COLLECTION_TYPE(SchemaTestsLinkSource)
 
 @interface InvalidReadWriteLinkingObjectsProperty : FakeObject
 @property RLMLinkingObjects *linkingObjects;
@@ -248,7 +274,7 @@ RLM_ARRAY_TYPE(SchemaTestsLinkSource)
 
 @end
 
-RLM_ARRAY_TYPE(NotARealClass)
+RLM_COLLECTION_TYPE(NotARealClass)
 
 @interface InvalidLinkingObjectsPropertyProtocol : FakeObject
 @property (readonly) RLMLinkingObjects<NotARealClass> *linkingObjects;
@@ -305,6 +331,12 @@ RLM_ARRAY_TYPE(NotARealClass)
                                                                propertyName:@"link"] };
 }
 
+@end
+
+@interface OrphanObject : RLMEmbeddedObject
+@property int value;
+@end
+@implementation OrphanObject
 @end
 
 
@@ -400,11 +432,13 @@ RLM_ARRAY_TYPE(NotARealClass)
                                                             @"secondChildCol": @"IntObject"});
         checkSchema(schema, @"SchemaTestClassLink", @{@"base": @"SchemaTestClassBase",
                                                       @"baseArray": @"SchemaTestClassBase",
+                                                      @"baseSet": @"SchemaTestClassBase",
                                                       @"child": @"SchemaTestClassFirstChild",
                                                       @"childArray": @"SchemaTestClassFirstChild",
+                                                      @"childSet": @"SchemaTestClassFirstChild",
                                                       @"secondChild": @"SchemaTestClassSecondChild",
-                                                      @"secondChildArray": @"SchemaTestClassSecondChild"});
-
+                                                      @"secondChildArray": @"SchemaTestClassSecondChild",
+                                                      @"secondChildSet": @"SchemaTestClassSecondChild"});
 
         // Test creating objects of each class
         [self deleteFiles];
@@ -433,6 +467,7 @@ RLM_ARRAY_TYPE(NotARealClass)
     NSArray *expectedTypes = @[@"AllTypesObject",
                                @"LinkToAllTypesObject",
                                @"StringObject",
+                               @"MixedObject",
                                @"IntObject"];
 
     NSString *unexpectedType = @"__$ThisTypeShouldNotOccur$__";
@@ -516,83 +551,110 @@ RLM_ARRAY_TYPE(NotARealClass)
                                               @"\tAllTypesObject {\n"
                                               @"\t\tboolCol {\n"
                                               @"\t\t\ttype = bool;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tintCol {\n"
                                               @"\t\t\ttype = int;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tfloatCol {\n"
                                               @"\t\t\ttype = float;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tdoubleCol {\n"
                                               @"\t\t\ttype = double;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tstringCol {\n"
                                               @"\t\t\ttype = string;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tbinaryCol {\n"
                                               @"\t\t\ttype = data;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tdateCol {\n"
                                               @"\t\t\ttype = date;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tcBoolCol {\n"
                                               @"\t\t\ttype = bool;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tlongCol {\n"
                                               @"\t\t\ttype = int;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
+                                              @"\t\t\toptional = NO;\n"
+                                              @"\t\t}\n"
+                                              @"\t\tdecimalCol {\n"
+                                              @"\t\t\ttype = decimal128;\n"
+                                              @"\t\t\tindexed = NO;\n"
+                                              @"\t\t\tisPrimary = NO;\n"
+                                              @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
+                                              @"\t\t\toptional = NO;\n"
+                                              @"\t\t}\n"
+                                              @"\t\tobjectIdCol {\n"
+                                              @"\t\t\ttype = object id;\n"
+                                              @"\t\t\tindexed = NO;\n"
+                                              @"\t\t\tisPrimary = NO;\n"
+                                              @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
+                                              @"\t\t\toptional = NO;\n"
+                                              @"\t\t}\n"
+                                              @"\t\tuuidCol {\n"
+                                              @"\t\t\ttype = uuid;\n"
+                                              @"\t\t\tindexed = NO;\n"
+                                              @"\t\t\tisPrimary = NO;\n"
+                                              @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tobjectCol {\n"
@@ -602,7 +664,29 @@ RLM_ARRAY_TYPE(NotARealClass)
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = YES;\n"
+                                              @"\t\t}\n"
+                                              @"\t\tmixedObjectCol {\n"
+                                              @"\t\t\ttype = object;\n"
+                                              @"\t\t\tobjectClassName = MixedObject;\n"
+                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
+                                              @"\t\t\tindexed = NO;\n"
+                                              @"\t\t\tisPrimary = NO;\n"
+                                              @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
+                                              @"\t\t\toptional = YES;\n"
+                                              @"\t\t}\n"
+                                              @"\t\tanyCol {\n"
+                                              @"\t\t\ttype = mixed;\n"
+                                              @"\t\t\tindexed = NO;\n"
+                                              @"\t\t\tisPrimary = NO;\n"
+                                              @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
+                                              @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t\tlinkingObjectsCol {\n"
                                               @"\t\t\ttype = linking objects;\n"
@@ -611,28 +695,30 @@ RLM_ARRAY_TYPE(NotARealClass)
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = YES;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t}\n"
                                               @"\tIntObject {\n"
                                               @"\t\tintCol {\n"
                                               @"\t\t\ttype = int;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = NO;\n"
                                               @"\t\t}\n"
                                               @"\t}\n"
                                               @"\tStringObject {\n"
                                               @"\t\tstringCol {\n"
                                               @"\t\t\ttype = string;\n"
-                                              @"\t\t\tobjectClassName = (null);\n"
-                                              @"\t\t\tlinkOriginPropertyName = (null);\n"
                                               @"\t\t\tindexed = NO;\n"
                                               @"\t\t\tisPrimary = NO;\n"
                                               @"\t\t\tarray = NO;\n"
+                                              @"\t\t\tset = NO;\n"
+                                              @"\t\t\tdictionary = NO;\n"
                                               @"\t\t\toptional = YES;\n"
                                               @"\t\t}\n"
                                               @"\t}\n"
@@ -751,6 +837,22 @@ RLM_ARRAY_TYPE(NotARealClass)
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
     RLMAssertThrowsWithReasonMatching(config.objectClasses = @[[MixedProperty class]],
                                       @"Property 'mixed' is declared as 'id'.*");
+}
+
+- (void)testEmebeddedLinkingToNonEmbedded {
+    RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
+    config.objectClasses = @[[LinkFromEmbeddedToTopLevel class], [IntObject class]];
+    XCTAssertNoThrow([RLMRealm realmWithConfiguration:config error:nil]);
+    config.objectClasses = @[[ArrayFromEmbeddedToTopLevel class], [IntObject class]];
+    XCTAssertNoThrow([RLMRealm realmWithConfiguration:config error:nil]);
+}
+
+- (void)testEmbeddedWithPrimaryKey {
+    RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
+    config.objectClasses = @[[EmbeddedObjectWithPrimaryKey class]];
+    RLMAssertThrowsWithReason([RLMRealm realmWithConfiguration:config error:nil],
+                              @"Embedded object type 'EmbeddedObjectWithPrimaryKey' cannot have a primary key.");
+
 }
 
 // Can't spawn child processes on iOS
@@ -1052,7 +1154,7 @@ RLM_ARRAY_TYPE(NotARealClass)
 
 - (void)testInsertingColumnsInBackgroundProcess {
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
-    config.schemaMode = realm::SchemaMode::Additive;
+    config.schemaMode = realm::SchemaMode::AdditiveDiscovered;
     if (!self.isParent) {
         config.dynamic = true;
         RLMRealm *realm = [RLMRealm realmWithConfiguration:config error:nil];
@@ -1100,6 +1202,35 @@ RLM_ARRAY_TYPE(NotARealClass)
     (void)[query lastObject];
     RLMRunChildAndWait();
     XCTAssertEqual(query.count, 3U);
+}
+
+- (void)testExplicitlyIncludedEmbeddedOrphanIsRejectedForSyncRealm {
+    RLMUser *user = RLMDummyUser();
+
+    // Test each different order of setting properties because there's a bunch of awkward state involved
+    RLMRealmConfiguration *config = [user configurationWithPartitionValue:@"dummy"];
+    config.objectClasses = @[OrphanObject.class];
+    RLMAssertThrowsWithReason([RLMRealm realmWithConfiguration:config error:nil],
+                              @"Embedded object 'OrphanObject' is unreachable by any link path from top level objects.");
+
+    config = [RLMRealmConfiguration defaultConfiguration];
+    config.syncConfiguration = [user configurationWithPartitionValue:@"dummy"].syncConfiguration;
+    config.objectClasses = @[OrphanObject.class];
+    RLMAssertThrowsWithReason([RLMRealm realmWithConfiguration:config error:nil],
+                              @"Embedded object 'OrphanObject' is unreachable by any link path from top level objects.");
+
+    config = [RLMRealmConfiguration defaultConfiguration];
+    config.objectClasses = @[OrphanObject.class];
+    config.syncConfiguration = [user configurationWithPartitionValue:@"dummy"].syncConfiguration;
+    RLMAssertThrowsWithReason([RLMRealm realmWithConfiguration:config error:nil],
+                              @"Embedded object 'OrphanObject' is unreachable by any link path from top level objects.");
+}
+
+- (void)testExplicitlyIncludedEmbeddedOrphanIsAllowedForLocalRealm {
+    RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
+    config.objectClasses = @[OrphanObject.class];
+    RLMRealm *realm = [RLMRealm realmWithConfiguration:config error:nil];
+    XCTAssertNotNil([realm.schema schemaForClassName:@"OrphanObject"]);
 }
 #endif
 

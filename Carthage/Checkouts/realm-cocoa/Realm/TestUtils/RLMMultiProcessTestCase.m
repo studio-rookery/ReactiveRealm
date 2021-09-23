@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #import "RLMMultiProcessTestCase.h"
+#import "RLMChildProcessEnvironment.h"
 
 #include <mach-o/dyld.h>
 
@@ -26,6 +27,10 @@
 
 @property (nonatomic, strong) NSString *xctestPath;
 @property (nonatomic, strong) NSString *testsPath;
+@end
+
+@interface RLMMultiProcessTestCase (Sync)
+- (NSString *)appId;
 @end
 
 @implementation RLMMultiProcessTestCase
@@ -56,6 +61,10 @@
         self.testName = NSStringFromSelector(selector);
     }
     return self;
+}
+
+- (BOOL)encryptTests {
+    return NO;
 }
 
 - (void)setUp {
@@ -107,11 +116,12 @@
 }
 
 #if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
-- (NSTask *)childTask {
+- (NSTask *)childTaskWithEnvironment:(RLMChildProcessEnvironment *)environment {
     NSString *testName = [NSString stringWithFormat:@"%@/%@", self.className, self.testName];
     NSMutableDictionary *env = [NSProcessInfo.processInfo.environment mutableCopy];
     env[@"RLMProcessIsChild"] = @"true";
     env[@"RLMParentProcessBundleID"] = [NSBundle mainBundle].bundleIdentifier;
+    [env addEntriesFromDictionary:[environment dictionaryValue]];
 
     // If we're running with address sanitizer or thread sanitizer we need to
     // explicitly tell dyld to inject the appropriate runtime library into
@@ -126,6 +136,9 @@
     // Don't inherit the config file in the subprocess, as multiple XCTest
     // processes talking to a single Xcode instance doesn't work at all
     [env removeObjectForKey:@"XCTestConfigurationFilePath"];
+    [env removeObjectForKey:@"XCTestSessionIdentifier"];
+    [env removeObjectForKey:@"XPC_SERVICE_NAME"];
+    [env removeObjectForKey:@"XCTestBundlePath"];
 
     NSTask *task = [[NSTask alloc] init];
     task.launchPath = self.xctestPath;
@@ -135,7 +148,19 @@
     return task;
 }
 
-- (int)runChildAndWait {
+- (NSTask *)childTaskWithAppIds:(NSArray *)appIds {
+    return [self childTaskWithEnvironment:[[RLMChildProcessEnvironment new] initWithAppIds:appIds
+                                                                                     email:nil
+                                                                                  password:nil
+                                                                                 identifer:0
+                                                                shouldCleanUpOnTermination:YES]];
+}
+
+- (NSTask *)childTask {
+    return [self childTaskWithAppIds:@[]];
+}
+
+- (NSPipe *)filterPipe {
     NSPipe *pipe = [NSPipe pipe];
     NSMutableData *buffer = [[NSMutableData alloc] init];
 
@@ -147,7 +172,7 @@
         const char *end = start + buffer.length;
         while ((newline = memchr(start, '\n', end - start))) {
             if (newline < start + 17 ||
-                (memcmp(start, "Test Suite", 10) && memcmp(start, "Test Case", 9) && memcmp(start, "	 Executed 1 test", 17))) {
+                (memcmp(start, "Test Suite", 10) && memcmp(start, "Test Case", 9) && memcmp(start, "     Executed 1 test", 17))) {
                 fwrite(start, newline - start + 1, 1, stderr);
             }
             start = newline + 1;
@@ -156,20 +181,46 @@
         // Remove everything up to the last newline, leaving any data not newline-terminated in the buffer
         [buffer replaceBytesInRange:NSMakeRange(0, start - (char *)buffer.bytes) withBytes:0 length:0];
     };
+    return pipe;
+}
 
-    NSTask *task = [self childTask];
-    task.standardError = pipe;
+- (int)runChildAndWaitWithEnvironment:(RLMChildProcessEnvironment *)environment {
+    NSTask *task = [self childTaskWithEnvironment:environment];
+    task.standardError = self.filterPipe;
     [task launch];
     [task waitUntilExit];
-
     return task.terminationStatus;
 }
+
+- (int)runChildAndWaitWithAppIds:(NSArray *)appIds {
+    return [self runChildAndWaitWithEnvironment:[[RLMChildProcessEnvironment new] initWithAppIds:appIds email:nil password:nil identifer:0 shouldCleanUpOnTermination:YES]];
+}
+
+- (int)runChildAndWait {
+    NSTask *task = [self childTask];
+    task.standardError = self.filterPipe;
+    [task launch];
+    [task waitUntilExit];
+    return task.terminationStatus;
+}
+
 #else
 - (NSTask *)childTask {
     return nil;
 }
+- (NSTask *)childTaskWithAppIds:(__unused NSArray *)appIds {
+    return nil;
+}
 
 - (int)runChildAndWait {
+    return 1;
+}
+
+- (int)runChildAndWaitWithAppIds:(__unused NSArray *)appIds {
+    return 1;
+}
+
+- (int)runChildAndWaitWithEnvironment:(RLMChildProcessEnvironment *)environment {
     return 1;
 }
 #endif

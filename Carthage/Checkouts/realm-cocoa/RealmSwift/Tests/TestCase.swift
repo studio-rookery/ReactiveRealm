@@ -19,9 +19,12 @@
 import Foundation
 import Realm
 import Realm.Dynamic
-import RealmTestSupport
 import RealmSwift
 import XCTest
+
+#if canImport(RealmTestSupport)
+import RealmTestSupport
+#endif
 
 func inMemoryRealm(_ inMememoryIdentifier: String) -> Realm {
     return try! Realm(configuration: Realm.Configuration(inMemoryIdentifier: inMememoryIdentifier))
@@ -104,13 +107,13 @@ class TestCase: RLMTestCaseBase {
             return
         }
         XCTFail("Objects expected to be equal, but weren't. First: \(String(describing: o1)), "
-            + "second: \(String(describing: o2))", file: fileName, line: lineNumber)
+            + "second: \(String(describing: o2))", file: (fileName), line: lineNumber)
     }
 
     /// Check whether two collections containing Realm objects are equal.
     func assertEqual<C: Collection>(_ c1: C, _ c2: C, fileName: StaticString = #file, lineNumber: UInt = #line)
         where C.Iterator.Element: Object {
-            XCTAssertEqual(c1.count, c2.count, "Collection counts were incorrect", file: fileName, line: lineNumber)
+            XCTAssertEqual(c1.count, c2.count, "Collection counts were incorrect", file: (fileName), line: lineNumber)
             for (o1, o2) in zip(c1, c2) {
                 assertEqual(o1, o2, fileName: fileName, lineNumber: lineNumber)
             }
@@ -119,14 +122,14 @@ class TestCase: RLMTestCaseBase {
     func assertEqual<T: Equatable>(_ expected: [T?], _ actual: [T?], file: StaticString = #file, line: UInt = #line) {
         if expected.count != actual.count {
             XCTFail("assertEqual failed: (\"\(expected)\") is not equal to (\"\(actual)\")",
-                file: file, line: line)
+                file: (file), line: line)
             return
         }
 
-        XCTAssertEqual(expected.count, actual.count, "Collection counts were incorrect", file: file, line: line)
+        XCTAssertEqual(expected.count, actual.count, "Collection counts were incorrect", file: (file), line: line)
         for (e, a) in zip(expected, actual) where e != a {
             XCTFail("assertEqual failed: (\"\(expected)\") is not equal to (\"\(actual)\")",
-                file: file, line: line)
+                file: (file), line: line)
             return
         }
     }
@@ -155,7 +158,7 @@ class TestCase: RLMTestCaseBase {
             try block()
         } catch {
             XCTFail("Expected no error, but instead caught <\(error)>.",
-                file: fileName, line: lineNumber)
+                file: (fileName), line: lineNumber)
         }
     }
 
@@ -165,12 +168,12 @@ class TestCase: RLMTestCaseBase {
         do {
             _ = try block()
             XCTFail("Expected to catch <\(expectedError)>, but no error was thrown.",
-                file: fileName, line: lineNumber)
+                file: (fileName), line: lineNumber)
         } catch let e as Realm.Error where e.code == expectedError {
             // Success!
         } catch {
             XCTFail("Expected to catch <\(expectedError)>, but instead caught <\(error)>.",
-                file: fileName, line: lineNumber)
+                file: (fileName), line: lineNumber)
         }
     }
 
@@ -180,23 +183,43 @@ class TestCase: RLMTestCaseBase {
         do {
             _ = try block()
             XCTFail("Expected to catch <\(expectedError)>, but no error was thrown.",
-                file: fileName, line: lineNumber)
+                file: (fileName), line: lineNumber)
         } catch let e where e._code == expectedError._code {
             // Success!
         } catch {
             XCTFail("Expected to catch <\(expectedError)>, but instead caught <\(error)>.",
-                file: fileName, line: lineNumber)
+                file: (fileName), line: lineNumber)
         }
     }
 
     func assertNil<T>(block: @autoclosure() -> T?, _ message: String? = nil,
                       fileName: StaticString = #file, lineNumber: UInt = #line) {
-        XCTAssert(block() == nil, message ?? "", file: fileName, line: lineNumber)
+        XCTAssert(block() == nil, message ?? "", file: (fileName), line: lineNumber)
     }
 
     func assertMatches(_ block: @autoclosure () -> String, _ regexString: String, _ message: String? = nil,
                        fileName: String = #file, lineNumber: UInt = #line) {
         RLMAssertMatches(self, block, regexString, message, fileName, lineNumber)
+    }
+
+    /// Check that a `MutableSet` contains all expected elements.
+    func assertSetContains<T, U>(_ set: MutableSet<T>, keyPath: KeyPath<T, U>, items: [U]) where U: Hashable {
+        var itemMap = Dictionary(uniqueKeysWithValues: items.map { ($0, false)})
+        set.map { $0[keyPath: keyPath]}.forEach {
+            itemMap[$0] = items.contains($0)
+        }
+        // ensure all items are present in the set.
+        XCTAssertFalse(itemMap.values.contains(false))
+    }
+
+    /// Check that an `AnyRealmCollection` contains all expected elements.
+    func assertAnyRealmCollectionContains<T, U>(_ set: AnyRealmCollection<T>, keyPath: KeyPath<T, U>, items: [U]) where U: Hashable {
+        var itemMap = Dictionary(uniqueKeysWithValues: items.map { ($0, false)})
+        set.map { $0[keyPath: keyPath]}.forEach {
+            itemMap[$0] = items.contains($0)
+        }
+        // ensure all items are present in the set.
+        XCTAssertFalse(itemMap.values.contains(false))
     }
 
     private func realmFilePrefix() -> String {
