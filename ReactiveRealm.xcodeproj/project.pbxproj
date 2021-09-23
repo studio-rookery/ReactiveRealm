@@ -26,11 +26,8 @@
 		C9B447C2222F7A720027080F /* MockObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C1222F7A720027080F /* MockObservableObject.swift */; };
 		C9B447C4222F7A7D0027080F /* MockObservableCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B447C3222F7A7D0027080F /* MockObservableCollection.swift */; };
 		F4081D4826FC4F72009F6E5E /* RealmSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4526FC4F72009F6E5E /* RealmSwift.xcframework */; };
-		F4081D4926FC4F72009F6E5E /* RealmSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4526FC4F72009F6E5E /* RealmSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4081D4A26FC4F72009F6E5E /* Realm.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4626FC4F72009F6E5E /* Realm.xcframework */; };
-		F4081D4B26FC4F72009F6E5E /* Realm.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4626FC4F72009F6E5E /* Realm.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4081D4C26FC4F72009F6E5E /* ReactiveSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4726FC4F72009F6E5E /* ReactiveSwift.xcframework */; };
-		F4081D4D26FC4F72009F6E5E /* ReactiveSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4726FC4F72009F6E5E /* ReactiveSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F489FD96222FF3EC0018E679 /* MockToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD95222FF3EC0018E679 /* MockToken.swift */; };
 		F489FD9A222FFC8F0018E679 /* LinkingObjectsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */; };
 		F4EBB76F24A8E7D100506248 /* ResultProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */; };
@@ -56,19 +53,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F4081D4E26FC4F72009F6E5E /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				F4081D4926FC4F72009F6E5E /* RealmSwift.xcframework in Embed Frameworks */,
-				F4081D4B26FC4F72009F6E5E /* Realm.xcframework in Embed Frameworks */,
-				F4081D4D26FC4F72009F6E5E /* ReactiveSwift.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -77,7 +61,6 @@
 		C928337321E5D4E200BE56AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C928337821E5D4E200BE56AC /* ReactiveRealmTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReactiveRealmTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C928337F21E5D4E200BE56AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C928338921E5E90D00BE56AC /* Carthage.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = Carthage.xcfilelist; sourceTree = "<group>"; };
 		C928338B21E5E96500BE56AC /* ReactiveSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveSwift.framework; path = Carthage/Build/iOS/ReactiveSwift.framework; sourceTree = "<group>"; };
 		C928338C21E5E96500BE56AC /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RealmSwift.framework; path = Carthage/Build/iOS/RealmSwift.framework; sourceTree = "<group>"; };
 		C928338D21E5E96500BE56AC /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = Carthage/Build/iOS/Result.framework; sourceTree = "<group>"; };
@@ -153,7 +136,6 @@
 				C92833B821E6080200BE56AC /* Extension */,
 				C928337221E5D4E200BE56AC /* ReactiveRealm.h */,
 				C928337321E5D4E200BE56AC /* Info.plist */,
-				C928338921E5E90D00BE56AC /* Carthage.xcfilelist */,
 				C928339521E5EA7D00BE56AC /* ObeservableCollection.swift */,
 				C92833AA21E5F7F600BE56AC /* NotificationTokenProtocol.swift */,
 				C92833AE21E5FFC200BE56AC /* ObservableObject.swift */,
@@ -252,7 +234,6 @@
 				C928336B21E5D4E200BE56AC /* Sources */,
 				C928336C21E5D4E200BE56AC /* Frameworks */,
 				C928336D21E5D4E200BE56AC /* Resources */,
-				F4081D4E26FC4F72009F6E5E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
