@@ -32,7 +32,6 @@
 		F4081D4C26FC4F72009F6E5E /* ReactiveSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4726FC4F72009F6E5E /* ReactiveSwift.xcframework */; };
 		F4081D4D26FC4F72009F6E5E /* ReactiveSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4081D4726FC4F72009F6E5E /* ReactiveSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F489FD96222FF3EC0018E679 /* MockToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD95222FF3EC0018E679 /* MockToken.swift */; };
-		F489FD98222FF5850018E679 /* RealmCollectionChange+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */; };
 		F489FD9A222FFC8F0018E679 /* LinkingObjectsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */; };
 		F4EBB76F24A8E7D100506248 /* ResultProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */; };
 /* End PBXBuildFile section */
@@ -103,7 +102,6 @@
 		F4081D4626FC4F72009F6E5E /* Realm.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Realm.xcframework; path = Carthage/Build/Realm.xcframework; sourceTree = "<group>"; };
 		F4081D4726FC4F72009F6E5E /* ReactiveSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ReactiveSwift.xcframework; path = Carthage/Build/ReactiveSwift.xcframework; sourceTree = "<group>"; };
 		F489FD95222FF3EC0018E679 /* MockToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockToken.swift; sourceTree = "<group>"; };
-		F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RealmCollectionChange+Extension.swift"; sourceTree = "<group>"; };
 		F489FD99222FFC8F0018E679 /* LinkingObjectsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkingObjectsTests.swift; sourceTree = "<group>"; };
 		F4EBB76E24A8E7D100506248 /* ResultProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -199,7 +197,6 @@
 			isa = PBXGroup;
 			children = (
 				C928339E21E5ECFD00BE56AC /* Realm+Extension.swift */,
-				F489FD97222FF5850018E679 /* RealmCollectionChange+Extension.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -359,7 +356,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C92833AD21E5F8A300BE56AC /* ObservableCollectionTests.swift in Sources */,
-				F489FD98222FF5850018E679 /* RealmCollectionChange+Extension.swift in Sources */,
 				C92833BC21E6091A00BE56AC /* SignalProducerTests.swift in Sources */,
 				C928339F21E5ECFD00BE56AC /* Realm+Extension.swift in Sources */,
 				C928339821E5ECB700BE56AC /* ResultsTests.swift in Sources */,
