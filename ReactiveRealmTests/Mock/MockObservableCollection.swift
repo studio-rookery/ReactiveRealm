@@ -8,37 +8,30 @@
 
 import Foundation
 import RealmSwift
+import Combine
 
 @testable import ReactiveRealm
 
 final class MockObservableCollection: ObeservableCollection, Equatable {
     
-    typealias Element = Int
-    
-    typealias NotificationTokenType = MockToken
+    typealias CollectionPublisher = AnyPublisher<MockObservableCollection, Error>
     
     var id = UUID().uuidString
     
-    let token = MockToken()
+    private let subject = PassthroughSubject<MockObservableCollection, Error>()
     
-    private var block: ((RealmCollectionChange<MockObservableCollection>) -> ())?
-    
-    func observe(on queue: DispatchQueue? = nil, _ block: @escaping (RealmCollectionChange<MockObservableCollection>) -> ()) -> MockToken {
-        self.block = block
-        sendInitial()
-        return token
-    }
-    
-    func sendInitial() {
-        block?(.initial(self))
+    var collectionPublisher: CollectionPublisher {
+        subject
+            .prepend(self)
+            .eraseToAnyPublisher()
     }
     
     func sendUpdate() {
-        block?(.update(self, deletions: [], insertions: [], modifications: []))
+        subject.send(self)
     }
     
     func sendError() {
-        block?(.error(NSError.dummy))
+        subject.send(completion: .failure(NSError.dummy))
     }
     
     static func == (lhs: MockObservableCollection, rhs: MockObservableCollection) -> Bool {

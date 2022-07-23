@@ -7,15 +7,16 @@
 //
 
 import Foundation
+import Combine
 import ReactiveSwift
 import RealmSwift
 
 /// `ObeservableCollection` is a protocol that has a common interface between `Results`, `List`,` LinkingObjects`, and `AnyRealmCollection`. Required interfaces are already implemented.
-public protocol ObeservableCollection: ReactiveExtensionsProvider {
+public protocol ObeservableCollection: ReactiveExtensionsProvider where CollectionPublisher.Output == Self {
     
-    associatedtype NotificationTokenType: NotificationTokenProtocol
+    associatedtype CollectionPublisher: Publisher
     
-    func observe(on queue: DispatchQueue?, _ block: @escaping (RealmCollectionChange<Self>) -> ()) -> NotificationTokenType
+    var collectionPublisher: CollectionPublisher { get }
 }
 
 extension Results: ObeservableCollection {
@@ -43,23 +44,22 @@ public extension Reactive where Base: ObeservableCollection {
     /// When the realm of the collection notifies an error, the producer sends the error.
     var producer: SignalProducer<Base, Error> {
         return SignalProducer<Base, Error> { observer, lifetime in
-            
             observer.send(value: self.base)
             
-            let token = self.base.observe(on: nil) { change in
-                switch change {
-                case .initial:
-                    break
-                case .update(let collection, _, _, _):
-                    observer.send(value: collection)
-                case .error(let error):
-                    observer.send(error: error)
+            let cancellable = self.base.collectionPublisher
+                .dropFirst()
+                .sink { completion in
+                    switch completion {
+                    case .finished:
+                        observer.sendCompleted()
+                    case .failure(let error):
+                        observer.send(error: error)
+                    }
+                } receiveValue: { output in
+                    observer.send(value: output)
                 }
-            }
             
-            lifetime.observeEnded {
-                token.invalidate()
-            }
+            lifetime.observeEnded(cancellable.cancel)            
         }
     }
     
