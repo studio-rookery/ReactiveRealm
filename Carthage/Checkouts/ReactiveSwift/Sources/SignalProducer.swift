@@ -1631,6 +1631,19 @@ extension SignalProducer {
 	}
 
 	/// Forward any values from `self` until `shouldContinue` returns `false`, at which
+	/// point the returned signal forwards the last value and then it completes.
+	/// This is equivalent to `take(while:)`, except it also forwards the last value that failed the check.
+	///
+	/// - parameters:
+	///   - shouldContinue: A closure to determine whether the forwarding of values should
+	///                     continue.
+	///
+	/// - returns: A signal which conditionally forwards values from `self`.
+	public func take(until shouldContinue: @escaping (Value) -> Bool) -> SignalProducer<Value, Error> {
+		return core.flatMapEvent(Signal.Event.take(until: shouldContinue))
+	}
+	
+	/// Forward any values from `self` until `shouldContinue` returns `false`, at which
 	/// point the produced `Signal` would complete.
 	///
 	/// - parameters:
@@ -2380,9 +2393,10 @@ extension SignalProducer {
 			return producer
 		}
 
-		var retries = count
+		return SignalProducer { observer, lifetime in
+			var retries = count
 
-		return flatMapError { error -> SignalProducer<Value, Error> in
+			lifetime += flatMapError { error -> SignalProducer<Value, Error> in
 				// The final attempt shouldn't defer the error if it fails
 				var producer = SignalProducer<Value, Error>(error: error)
 				if retries > 0 {
@@ -2395,6 +2409,8 @@ extension SignalProducer {
 				return producer
 			}
 			.retry(upTo: count)
+			.start(observer)
+		}
 	}
 
 	/// Wait for completion of `self`, *then* forward all events from

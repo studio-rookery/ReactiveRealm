@@ -6,6 +6,7 @@ extension Signal {
 	///
 	/// Signals must conform to the grammar:
 	/// `value* (failed | completed | interrupted)?`
+	@frozen
 	public enum Event {
 		/// A value provided by the signal.
 		case value(Value)
@@ -287,6 +288,12 @@ extension Signal.Event {
 	internal static func take(while shouldContinue: @escaping (Value) -> Bool) -> Transformation<Value, Error> {
 		return { downstream, _ in
 			Operators.TakeWhile(downstream: downstream, shouldContinue: shouldContinue)
+		}
+	}
+	
+	internal static func take(until shouldContinue: @escaping (Value) -> Bool) -> Transformation<Value, Error> {
+		return { downstream, _ in
+			Operators.TakeUntil(downstream: downstream, shouldContinue: shouldContinue)
 		}
 	}
 

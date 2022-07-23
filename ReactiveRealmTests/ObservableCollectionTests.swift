@@ -98,14 +98,4 @@ final class CollectionChangeObservableTests: XCTestCase {
         
         XCTAssertFalse(disposable.isDisposed)
     }
-    
-    func testInvalidate() {
-        let collection = MockObservableCollection()
-        let disposable = collection.reactive.producer.start()
-        
-        XCTAssertEqual(collection.token.isInvalidated, false)
-        
-        disposable.dispose()
-        XCTAssertEqual(collection.token.isInvalidated, true)
-    }
 }
