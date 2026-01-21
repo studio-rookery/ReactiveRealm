@@ -19,18 +19,22 @@ public protocol ObeservableCollection: ReactiveExtensionsProvider where Collecti
     var collectionPublisher: CollectionPublisher { get }
 }
 
+extension Results: @retroactive ReactiveExtensionsProvider {}
 extension Results: ObeservableCollection {
     
 }
 
+extension List: @retroactive ReactiveExtensionsProvider {}
 extension List: ObeservableCollection {
     
 }
 
+extension LinkingObjects: @retroactive ReactiveExtensionsProvider {}
 extension LinkingObjects: ObeservableCollection {
     
 }
 
+extension AnyRealmCollection: @retroactive ReactiveExtensionsProvider {}
 extension AnyRealmCollection: ObeservableCollection {
     
 }

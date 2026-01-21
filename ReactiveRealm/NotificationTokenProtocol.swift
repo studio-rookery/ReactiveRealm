@@ -11,7 +11,7 @@ import RealmSwift
 /// `NotificationTokenProtocol` is a protocol that abstracts `NotificationToken` for testing.
 public protocol NotificationTokenProtocol {
     
-    func invalidate()
+    func invalidate() -> Bool
 }
 
 extension NotificationToken: NotificationTokenProtocol {

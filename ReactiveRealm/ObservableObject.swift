@@ -20,7 +20,7 @@ public protocol ObservableObject {
     func observe<T>(keyPaths: [String]?, on queue: DispatchQueue?, _ block: @escaping (ObjectChange<T>) -> Void) -> NotificationTokenType where T : ObjectBase
 }
 
-extension Object: ObservableObject, ReactiveExtensionsProvider {
+extension Object: ObservableObject, @retroactive ReactiveExtensionsProvider {
     
 }
 
@@ -44,7 +44,7 @@ public extension Reactive where Base: ObservableObject {
             }
             
             lifetime.observeEnded {
-                token.invalidate()
+                _ = token.invalidate()
             }
         }
     }
